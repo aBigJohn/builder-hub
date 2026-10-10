@@ -548,6 +548,8 @@ export const register: Register = on => {
     // Two columns: milestone over the meters on the left, crew over tasks on the right.
     // Every Svg gets an explicit size: an interactive (animated) Svg is drawn in a frame that
     // would otherwise take a default height and leave empty space above the prompt.
+    // No interactive Svg in the band: an interactive one is a frame, and the band is redrawn
+    // every second or two while a builder works, which made the frames flash.
     if (e.surface !== 'terminal' && 'Svg' in table) {
       const { Svg } = table
       const crabH = Math.round((MINI_CRAB_W * CANVAS_H) / CANVAS_W)
@@ -571,7 +573,6 @@ export const register: Register = on => {
                   width={FLOW_W}
                   height={FLOW_H}
                   alt={`${milestone.title}: ${flowLabel(milestone)}`}
-                  isInteractive={working.length > 0 ? true : undefined}
                 />
               ) : (
                 <Text color={NEON.muted}>Keine Aufgabenliste</Text>
@@ -599,7 +600,6 @@ export const register: Register = on => {
                   width={MINI_CRAB_W}
                   height={crabH}
                   alt={`${member.name} ${STATUS_WORD[member.status]}: ${member.task}`}
-                  isInteractive={member.status === 'working' ? true : undefined}
                 />
               ))}
               {idleCrabs.map(design => (
@@ -805,6 +805,8 @@ export const register: Register = on => {
     if (e.surface !== 'terminal' && 'Svg' in table) {
       const { Svg } = table
       const width = Math.max(240, Math.min(460, e.props.bodyColumns * PX_PER_COLUMN - 8))
+      // Rows stay images: their figures change every beat, and an interactive frame would
+      // reload (flash) on each change.
       const row = (member: CrewMember) => (
         <Svg
           key={`row-${member.id}`}
@@ -823,7 +825,6 @@ export const register: Register = on => {
           width={width}
           height={66}
           alt={`${member.name}: ${member.task}, ${STATUS_WORD[member.status]}, ${statsLine(member)}`}
-          isInteractive={member.status === 'working' ? true : undefined}
         />
       )
       return (
