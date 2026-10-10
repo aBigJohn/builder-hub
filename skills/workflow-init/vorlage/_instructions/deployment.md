@@ -4,7 +4,7 @@
 
 | # | Target | What it means | Who triggers it |
 |---|---|---|---|
-| A | {{local dev install}} | {{copy build into the host's plugin folder / load via dev tool}} | {{Claude may do this freely?}} |
+| A | {{local dev install}} | {{e.g. copy the build where the target loads it / run the dev server}} | {{Claude may do this freely?}} |
 | B | {{testers / shared folder}} | {{...}} | {{user only}} |
 | C | {{store / marketplace / git release}} | {{...}} | {{user only}} |
 

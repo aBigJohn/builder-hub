@@ -27,16 +27,20 @@ verstehst. Ändere noch nichts.
 Fragen** (nicht alles auf einmal). Wo es eine naheliegende Standardantwort gibt, schlag sie vor,
 dann muss die Person nur bestätigen. Frag nach, wenn eine Antwort unklar ist.
 
-Runde A — Was wird gebaut:
-1. Was ist das Tool? Ein, zwei Sätze, und für wen.
-2. In welchem Host-Programm läuft es (z. B. Photoshop), welche Version, welches Betriebssystem?
-3. Welche Technik: Plugin-System (z. B. UXP, CEP, C++-SDK), Sprache (JS/TS/C++/...),
-   Build-Werkzeuge? Wenn unbekannt: nach kurzer Recherche die passende vorschlagen und in drei
-   Sätzen begründen.
+Runde A — Was für ein Projekt:
+1. Was für ein Projekt ist es, in ein, zwei Sätzen, und für wen? Biete Arten zur Auswahl an,
+   z. B. Plugin/Erweiterung für ein Programm, Web-App/Website, Skript/Automatisierung,
+   Desktop- oder Mobile-App, Spiel/Mod, Daten/Analyse, Texte/Dokumente. Alle weiteren Fragen
+   richten sich nach dieser Antwort: frag nur, was zu dieser Art passt.
+2. Worauf läuft es bzw. womit arbeitet es (z. B. Programm + Version, Browser, Gerät, Server),
+   und auf welchem Betriebssystem wird gearbeitet?
+3. Welche Technik (Sprache, Framework, Build-Werkzeuge)? Wenn unbekannt: nach kurzer Recherche
+   die passende vorschlagen und in drei Sätzen begründen.
 4. Gibt es schon Code oder Material (Ordner, Repo, Vorbilder, Screenshots)? Wo?
 
 Runde B — Wie wird getestet und ausgeliefert:
-5. Wie testet man eine Änderung (Plugin laden, Entwickler-Tool, Neustart des Host-Programms)?
+5. Wie testet man eine Änderung (je nach Art: im Programm laden, im Browser öffnen, Skript
+   ausführen, auf dem Gerät starten ...)?
 6. Wohin wird ausgeliefert? Nur lokal, an Testpersonen, in einen Store/Marketplace, per Git?
    Gibt es mehr als ein Ziel? (Dann gilt die Frag-zuerst-Regel aus `deployment.md`.)
 7. Git: Wird Git genutzt? Führt die Person Git-Befehle selbst aus, oder darf Claude
@@ -52,13 +56,15 @@ Runde C — Wie wir zusammenarbeiten:
     Projekte)?
 
 **Schritt 3 — Lücken füllen.** Mit den Antworten:
+- Überall die Begriffe an die Art des Projekts anpassen ("target" = das Programm, die
+  Plattform oder Umgebung, auf der es läuft). Was für diese Art nicht passt, streichen.
 - `CLAUDE.md`: alle `{{...}}` ersetzen, die Harte-Regeln-Liste an das Projekt anpassen (Regeln,
   die nicht passen, streichen; fehlende ergänzen). **Kurz halten** — die Datei wird in jeder
   Sitzung geladen.
 - `_instructions/toolchain.md`, `architecture.md`, `deployment.md`, `verification.md`,
   `traps.md`: ausfüllen, was jetzt schon bekannt ist; alles Unbestätigte als **ASSUMED** markieren.
-  Für `architecture.md`: einen ersten Entwurf (Module, Datenfluss, Schnittstelle zum
-  Host-Programm, Ordnerstruktur im Projekt) machen und ihn **kurz zeigen, bevor** du ihn
+  Für `architecture.md`: einen ersten Entwurf (Module, Datenfluss, Schnittstelle zur
+  Zielumgebung, Ordnerstruktur im Projekt) machen und ihn **kurz zeigen, bevor** du ihn
   festschreibst.
 - `_instructions/templates/TASKS.md`: die Meilensteine auf diese Art von Projekt umschreiben.
   `STATE.md` und `project-CLAUDE.md` nur anpassen, wo etwas nicht passt.

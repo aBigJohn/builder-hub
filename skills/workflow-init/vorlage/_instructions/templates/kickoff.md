@@ -3,7 +3,7 @@
 Open a session in the **workspace root** and paste something like:
 
 > Neues Projekt: **<was es ist>**.
-> Läuft in **<Host-Programm + Version>**, Technik **<z. B. UXP/TypeScript>**.
+> Läuft auf/in **<Programm, Plattform oder Umgebung + Version>**, Technik **<z. B. TypeScript, Python, C++>**.
 > Umfang für den Anfang: **<erste Funktion>**, später **<…>**.
 > Vorbilder / Material: <Links, Screenshots, Ordner>.
 > Leg es an und mach einen Architektur-Entwurf.
@@ -11,7 +11,7 @@ Open a session in the **workspace root** and paste something like:
 ## What happens next
 
 1. Scaffold `projects/<name>/` (`new-project.ps1`)
-2. **Survey before building:** load a minimal "hello world" plugin in the real host program and
+2. **Survey before building:** run a minimal "hello world" on the real target and
    write down what was MEASURED (versions, API limits, how reload works). RETRO lesson 1.
 3. Architecture draft in `_instructions/architecture.md` → **show the user, then commit to it**
 4. Break the work into tasks in `notes/TASKS.md` (milestones as `##` groups). Each task small

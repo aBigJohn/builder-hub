@@ -43,6 +43,14 @@ den Befehl im Terminal tippen.
    - **Nur für eine Sitzung im Terminal:** `claude --plugin-dir <pfad>/builder-hub`
 3. Claude Code bzw. die App neu starten.
 
+## Voraussetzungen
+
+- Eine aktuelle Claude-Code-Version (Mods mit Hooks-Modul; getestet mit 2.1.295).
+- Ein Abo mit Zugriff auf Opus: Der Builder läuft auf Opus mit hohem Effort. Das kostet mehr als
+  kleinere Modelle, deshalb macht der Hauptchat kleine Korrekturen selbst.
+- Die Vorlage von `/workflow-init` ist auf Windows ausgelegt (`new-project.ps1`). Unter macOS/Linux
+  braucht das Skript PowerShell 7 (`pwsh`), oder Claude legt das Projekt von Hand an.
+
 ## Was er erwartet
 
 - **Aufgabenliste:** `notes/TASKS.md` im Arbeitsordner oder `projects/<name>/notes/TASKS.md`. Das Format:

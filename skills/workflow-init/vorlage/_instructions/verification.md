@@ -9,7 +9,7 @@ change were wrong.
 2. **Diff against the last good state** — only the intended lines/bytes changed.
 3. **Automated check / test** — and run it once against a known-bad input (control) so you know
    it can fail.
-4. **Run it in the host program** — {{how: load dev plugin, open test document, ...}}.
+4. **Run it on the real target** — {{how: load the dev build, open the page, run the script, ...}}.
 5. **User test** — a numbered list of exactly what to look at, one change per round.
 
 ## Rules

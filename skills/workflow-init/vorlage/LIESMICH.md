@@ -26,7 +26,7 @@ _instructions/            Gesammeltes Wissen, wiederverwendbare Skripte. Nur Tex
   toolchain.md            Pfade, Versionen, welche Installation wofür
   verification.md         Wie man beweist, dass etwas funktioniert
   deployment.md           Wohin gebaut/ausgeliefert wird - und die Frag-zuerst-Regel
-  traps.md                Fallen der Umgebung (Shell, Build, Host-Programm)
+  traps.md                Fallen der Umgebung (Shell, Build, Zielumgebung)
   scripts.md              Liste der fertigen Skripte - vor jedem neuen Skript lesen
   templates/              Vorlagen für neue Projekte (STATE.md, Projekt-CLAUDE.md, Kickoff)
   new-project.ps1         Legt ein neues Projekt unter projects/ an

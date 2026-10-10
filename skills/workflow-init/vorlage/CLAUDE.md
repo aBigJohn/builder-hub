@@ -8,10 +8,10 @@ Read this first. It is auto-loaded for every project under `projects/`.
 0. **Read `_instructions/RETRO.md` at the start of every session, before the first real action.**
    It is the list of mistakes already paid for. Short, and the best-value read in the workspace.
    (Main chat only. Builders skip it: their brief carries what they need.)
-1. **Target: {{HOST_PROGRAM_AND_VERSION}} on {{OS}}.** If several versions are installed, never
+1. **Target: {{WHERE_IT_RUNS_AND_VERSION}} on {{OS}}.** If several versions are installed, never
    guess which one — the paths are in `_instructions/toolchain.md`.
-2. **Back up before overwriting anything that already works** (an installed plugin, a release
-   build, a user file). One-step-back snapshot in `backups/` or next to the file as `*.bak`.
+2. **Back up before overwriting anything that already works** (an installed build, a release, a
+   user file). One-step-back snapshot in `backups/` or next to the file as `*.bak`.
 3. **Measure, don't assume.** A number or behaviour written in a notes file is a *claim*. Verify it
    against the real thing before building on it. Label every fact **MEASURED** or **ASSUMED**.
 4. **Ask before destructive or outward-facing steps** — deleting data, overwriting a working file,

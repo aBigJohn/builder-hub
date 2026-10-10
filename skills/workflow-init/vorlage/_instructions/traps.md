@@ -1,6 +1,6 @@
 # Traps — when something silently did nothing
 
-Environment traps (shell, build tool, host program) that cost time. Same format as all lessons.
+Environment traps (shell, build tool, target) that cost time. Same format as all lessons.
 Two inherited ones that bite on Windows in almost every project:
 
 ### A path with `[` `]` returns nothing in PowerShell

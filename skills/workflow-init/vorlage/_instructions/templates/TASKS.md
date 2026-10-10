@@ -6,7 +6,7 @@
 
 ## M0 — Setup
 - [ ] Requirements clear + architecture drafted (`_instructions/architecture.md`)
-- [ ] Dev setup: plugin loads in the host program
+- [ ] Dev setup: a hello world runs on the real target
 
 ## M1 — First feature
 - [ ] First working feature end-to-end

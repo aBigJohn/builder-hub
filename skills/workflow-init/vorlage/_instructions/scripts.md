@@ -7,5 +7,5 @@ A script that writes files must read its result back and fail loudly if it does 
 
 | Script | Where | Does | Example |
 |---|---|---|---|
-| `new-project.ps1` | `_instructions/` | scaffolds `projects/<name>/` from `templates/` | `.\_instructions\new-project.ps1 -Name my_plugin` |
+| `new-project.ps1` | `_instructions/` | scaffolds `projects/<name>/` from `templates/` | `.\_instructions\new-project.ps1 -Name my_project` |
 | {{...}} | {{...}} | {{...}} | {{...}} |

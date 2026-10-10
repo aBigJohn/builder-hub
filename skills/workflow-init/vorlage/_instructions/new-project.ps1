@@ -1,5 +1,5 @@
 # Scaffold a new project.
-#   .\_instructions\new-project.ps1 -Name my_plugin
+#   .\_instructions\new-project.ps1 -Name my_project
 # Creates projects\<Name>\ with the standard skeleton and seeds it from templates\.
 # Guideline files are NEVER copied -- they live in _instructions\ and load via the root CLAUDE.md.
 param(
@@ -48,7 +48,7 @@ Write-Output ""
 Write-Output "Next:"
 Write-Output "  1. Fill in goal / scope / delivery target at the top of notes\STATE.md,"
 Write-Output "     and the first milestones in notes\TASKS.md"
-Write-Output "  2. Survey the host program with a minimal plugin before building (RETRO lesson 1)"
+Write-Output "  2. Survey the target with a minimal hello world before building (RETRO lesson 1)"
 Write-Output "  3. Draft the architecture in _instructions\architecture.md and show it to the user"
 Write-Output ""
 Write-Output "Work from projects\$Name\ in future sessions so both CLAUDE.md files load."

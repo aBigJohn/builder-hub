@@ -3,7 +3,7 @@
 Process lessons: the mistakes that made work take longer than it needed to. The technical facts
 live in the other `_instructions/` files. The first block is inherited from the workspace this
 template was copied from (a 3D-modding workflow, several finished projects); the lessons are
-written generically because they recur in any tool or plugin project. Add your own below.
+written generically because they recur in any software project. Add your own below.
 
 ---
 
@@ -12,7 +12,7 @@ written generically because they recur in any tool or plugin project. Add your o
 ### 1. Survey the real thing before building against it
 The most expensive mistake on record: work was built against numbers written in a notes file.
 They were never the real values; everything downstream was built to fiction and redone twice.
-**Rule:** before building on an input (an API's behaviour, a file format, a host program's
+**Rule:** before building on an input (an API's behaviour, a file format, the target's
 limits), measure it on the real thing and write the result down as MEASURED.
 
 ### 2. Notes are claims, not facts — label provenance

@@ -2,21 +2,21 @@
 
 Open this before changing structure, adding a module, or touching an interface.
 Keep it current: a structural change is not finished until this file says so.
-Mark every statement about the host program **MEASURED** (tried it) or **ASSUMED** (docs/guess).
+Mark every statement about the target (program, platform, runtime) **MEASURED** (tried it) or **ASSUMED** (docs/guess).
 
 ## Purpose in one paragraph
 
 {{WHAT_THE_TOOL_DOES_AND_FOR_WHOM}}
 
-## Host integration
+## Target integration
 
 | Item | Value | Status |
 |---|---|---|
-| Host program + version | {{HOST}} | ASSUMED |
-| Plugin technology | {{e.g. UXP / CEP / native SDK}} | ASSUMED |
+| Target (program / platform / runtime) + version | {{TARGET}} | ASSUMED |
+| Technology | {{e.g. plugin API, framework, engine}} | ASSUMED |
 | Language / build | {{e.g. TypeScript + bundler}} | ASSUMED |
-| How the plugin is loaded for development | {{...}} | ASSUMED |
-| Minimum supported host version | {{...}} | ASSUMED |
+| How a dev build is run or loaded | {{...}} | ASSUMED |
+| Minimum supported target version | {{...}} | ASSUMED |
 
 ## Modules
 
@@ -36,7 +36,7 @@ Mark every statement about the host program **MEASURED** (tried it) or **ASSUMED
 ## Data flow
 
 ```
-{{user action}} -> {{UI}} -> {{core logic}} -> {{host API}} -> {{result}}
+{{user action}} -> {{UI}} -> {{core logic}} -> {{target API}} -> {{result}}
 ```
 
 ## Interfaces that must stay stable
@@ -49,6 +49,6 @@ Mark every statement about the host program **MEASURED** (tried it) or **ASSUMED
 |---|---|---|---|
 | {{DATE}} | {{...}} | {{...}} | {{...}} |
 
-## Known limits of the host program
+## Known limits of the target
 
 - {{...}} (MEASURED / ASSUMED)

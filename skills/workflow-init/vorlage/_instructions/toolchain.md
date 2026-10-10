@@ -5,8 +5,8 @@ the target. Every line: **MEASURED** (checked on this machine, with date) or **A
 
 | What | Path / version | Used for | Status |
 |---|---|---|---|
-| Host program | {{...}} | target for testing | ASSUMED |
-| SDK / plugin dev tool | {{...}} | loading the dev build | ASSUMED |
+| Target (program / platform) | {{...}} | where it runs and is tested | ASSUMED |
+| SDK / dev tool | {{...}} | running the dev build | ASSUMED |
 | Runtime (Node, Python, compiler) | {{...}} | build | ASSUMED |
 | Editor / debugger | {{...}} | | ASSUMED |
 | Shell | {{PowerShell / bash}} | scripts | ASSUMED |
