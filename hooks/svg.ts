@@ -174,7 +174,8 @@ export const weekSvg = (a: WeekArgs) => {
     `<rect x="${x0}" y="${barY}" width="${barW}" height="${barH}" rx="7" class="f-track"/>`,
     fillW > 0 ? `<rect x="${x0}" y="${barY}" width="${fillW.toFixed(1)}" height="${barH}" rx="7" fill="url(#wk)" filter="url(#glow)"/>` : '',
     ticks.join(''),
-    paceX === null ? '' : `<rect x="${(paceX - 1.2).toFixed(1)}" y="${barY - 3}" width="2.4" height="${barH + 6}" rx="1.2" class="f-fg"/>`,
+    // Today's marker stays inside the bar, but is wider and taller than the day ticks.
+    paceX === null ? '' : `<rect x="${(paceX - 1.5).toFixed(1)}" y="${barY + 1.5}" width="3" height="${barH - 3}" rx="1.5" class="f-fg"/>`,
     `</svg>`,
   ].join('')
 }
