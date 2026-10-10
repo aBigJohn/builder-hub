@@ -107,11 +107,14 @@ const toMeterRows = (snap: UsageSnapshot | null, now: number): MeterRow[] => {
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000
 const WEEK_MAX_W = 640
-// What the right column (up to four crabs and the crew button) takes, roughly, in CSS pixels.
-const RIGHT_COLUMN_W = 260
 const WEEK_MIN_W = 160
+// Measured on the desktop: a band of 94 columns is about 765 CSS pixels wide.
+const BAND_PX_PER_COLUMN = 8
+// Space between the band's columns, and a margin so a rough estimate never pushes into a wrap.
+const COLUMN_GAP_W = 18
+const WEEK_SAFETY = 0.92
 
-type WeekView = { percent: number | null; pace: number | null; caption: string; short: string }
+type WeekView = { percent: number | null; pace: number | null; caption: string; label: string; short: string }
 
 const resetText = (minutes: number) => {
   const days = Math.floor(minutes / 1440)
@@ -126,12 +129,13 @@ const resetText = (minutes: number) => {
 const weekView = (snap: UsageSnapshot | null, now: number): WeekView => {
   const percent = snap?.weekPercent ?? null
   const resetAt = snap?.weekResetsAt ? Date.parse(snap.weekResetsAt) : Number.NaN
-  if (percent === null) return { percent, pace: null, caption: 'keine Daten (nur mit Abo)', short: '–' }
-  if (Number.isNaN(resetAt)) return { percent, pace: null, caption: 'Reset unbekannt', short: `${Math.round(percent)} %` }
+  if (percent === null) return { percent, pace: null, caption: 'keine Daten (nur mit Abo)', label: '', short: '–' }
+  if (Number.isNaN(resetAt)) return { percent, pace: null, caption: 'Reset unbekannt', label: '', short: `${Math.round(percent)} %` }
   const pace = clamp(((now - (resetAt - WEEK_MS)) / WEEK_MS) * 100)
   const day = ((pace / 100) * 7).toFixed(1).replace('.', ',')
   const caption = `Tag ${day} von 7 · ${resetText(Math.max(0, Math.ceil((resetAt - now) / 60_000)))}`
-  return { percent, pace, caption, short: `${Math.round(percent)} % · Soll ${Math.round(pace)} %` }
+  const label = `Tag ${day} von 7`
+  return { percent, pace, caption, label, short: `${Math.round(percent)} % · Soll ${Math.round(pace)} %` }
 }
 
 const textBar = (percent: number | null, cells: number) => {
@@ -700,7 +704,13 @@ export const register: Register = (on, options) => {
       const { Svg } = table
       const crabH = Math.round((MINI_CRAB_W * CANVAS_H) / CANVAS_W)
       // The week bar fills the space between the two columns; on a narrow window it steps aside.
-      const roomW = e.props.bodyColumns * PX_PER_COLUMN - FLOW_W - RIGHT_COLUMN_W - 48
+      // The right column is as wide as its crab row or its tasks button, whichever is wider.
+      const crabRowW =
+        (crewCrabs.length + idleCrabs.length) * (MINI_CRAB_W + 8) + 60 + (working.length > 0 ? 24 : 0) + (isCrewPaneOpen ? 20 : 0)
+      const tasksW = 110 + (doing > 0 ? 24 : 0) + (isTasksPaneOpen ? 20 : 0)
+      const roomW = Math.floor(
+        (e.props.bodyColumns * BAND_PX_PER_COLUMN - FLOW_W - Math.max(crabRowW, tasksW) - 2 * COLUMN_GAP_W) * WEEK_SAFETY,
+      )
       const weekW = roomW < WEEK_MIN_W ? 0 : Math.min(WEEK_MAX_W, roomW)
       return (
         <Box flexDirection="row" justifyContent="space-between" alignItems="flex-start">
@@ -745,7 +755,7 @@ export const register: Register = (on, options) => {
             <Box flexDirection="column" flexShrink={1} marginLeft={2}>
               <Svg
                 key="week"
-                source={weekSvg({ width: weekW, percent: week.percent, pace: week.pace, caption: week.caption })}
+                source={weekSvg({ width: weekW, percent: week.percent, pace: week.pace, caption: week.label || week.caption })}
                 width={weekW}
                 height={WEEK_H}
                 alt={`Woche: ${week.short} · ${week.caption}`}

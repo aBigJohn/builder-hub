@@ -281,7 +281,11 @@ test('the week bar sets the weekly usage against an even pace since the reset', 
   expect(drawn, 'day of the week').toContain('Tag 3,0 von 7')
   expect(drawn, 'time to the reset').toContain('Reset in 4 T 0 h')
 
-  const narrow = await $.ui.mount({ plugin: 'builder-hud', surface: 'desktop', component: 'AbovePrompt', props: bandProps(90) })
+  // The desktop band measured 94 columns wide in a normal window: the bar must fit there.
+  const usual = await $.ui.mount({ plugin: 'builder-hud', surface: 'desktop', component: 'AbovePrompt', props: bandProps(94) })
+  expect(JSON.stringify(await usual.drawn()), 'fits a normal window').toContain('Soll 43 %')
+
+  const narrow = await $.ui.mount({ plugin: 'builder-hud', surface: 'desktop', component: 'AbovePrompt', props: bandProps(60) })
   expect(JSON.stringify(await narrow.drawn()), 'no room, no week bar').not.toContain('Soll 43 %')
 
   const text = await $.ui.mount({ plugin: 'builder-hud', surface: 'terminal', component: 'AbovePrompt', props: bandProps(200) })
