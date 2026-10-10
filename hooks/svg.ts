@@ -96,9 +96,9 @@ export const METER_ROW_H = 16
 export const BAND_GUTTER = 34
 
 /**
- * Meters side by side in exactly `width` pixels (the milestone bar's width): the first label sits
- * in the gutter, the first bar starts where the milestone track starts, the last bar ends where it
- * ends; each value is centred inside its bar.
+ * Meters side by side in exactly `width` pixels (the milestone bar's width), all bars equally wide:
+ * the first bar starts where the milestone track starts, the last bar ends where it ends; each
+ * label sits right before its bar and each value is centred inside it.
  */
 export const meterRowSvg = (width: number, items: readonly MeterItem[]) => {
   const gap = 8
@@ -114,7 +114,8 @@ export const meterRowSvg = (width: number, items: readonly MeterItem[]) => {
     cursor = barX + barW + gap
     const fill = it.percent === null ? 0 : Math.max(barH, (barW * Math.max(0, Math.min(100, it.percent))) / 100)
     return [
-      `<text x="${x.toFixed(1)}" y="12.4" font-size="11" font-weight="600" class="f-muted">${esc(it.label)}</text>`,
+      // every label hugs its own bar, the first one ends where the milestone track starts
+      `<text x="${(barX - 5).toFixed(1)}" y="12.4" font-size="11" font-weight="600" text-anchor="end" class="f-muted">${esc(it.label)}</text>`,
       `<rect x="${barX.toFixed(1)}" y="${barY}" width="${barW.toFixed(1)}" height="${barH}" rx="6" class="f-track"/>`,
       fill > 0 ? `<rect x="${barX.toFixed(1)}" y="${barY}" width="${fill.toFixed(1)}" height="${barH}" rx="6" fill="url(#m${i})" filter="url(#glow)"/>` : '',
       `<text x="${(barX + barW / 2).toFixed(1)}" y="11.6" font-size="9.5" font-weight="500" letter-spacing="0.2" text-anchor="middle" fill="#ffffff" stroke="#1a1b26" stroke-width="0.9" stroke-opacity="0.45" paint-order="stroke">${esc(it.text)}</text>`,
