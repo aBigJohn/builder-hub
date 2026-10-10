@@ -199,6 +199,62 @@ test('the band animates by redrawn pictures, never by flashing frames', async ($
   expect(await picture(), 'still while nobody works').toBe(idle)
 })
 
+const subagentStop = (agentId: string, inFlight: string[]) => ({
+  hook_event_name: 'SubagentStop' as const,
+  session_id: 's',
+  transcript_path: 't',
+  cwd: 'C:/ws',
+  stop_hook_active: false,
+  agent_id: agentId,
+  agent_transcript_path: 't',
+  agent_type: 'builder',
+  background_tasks: inFlight.map(id => ({ id, type: 'shell', status: 'running', description: 'sleep' })),
+})
+
+test('a builder keeps working while its own background command runs', async ($, on) => {
+  const w = world(on, { [PATH]: TASKS })
+  on('tool.call', () => ({ result: { stdout: '', stderr: '', interrupted: false, backgroundTaskId: 'b1' } }))
+  on('classic.SubagentStop', () => ({}))
+  w.agents = [builder('a1', 'Maurice: 2 Minuten warten', 'running')]
+  await start($)
+  const ui = await $.ui.mount({ plugin: 'builder-hud', surface: 'desktop', component: 'Pane', requestId: 'crew', props: paneProps })
+
+  await $.tool.call({ tool: 'Bash', command: 'sleep 120', run_in_background: true, agentId: 'a1' })
+  // Its turn ends while the sleep runs: the engine already calls it completed.
+  w.agents = [builder('a1', 'Maurice: 2 Minuten warten', 'completed')]
+  await $.turn.complete({ answer: 'wartet', durationMs: 1, isAborted: false, turnId: 't', agentId: 'a1', reason: 'answer' })
+  await $.classic.SubagentStop(subagentStop('a1', ['b1']))
+  await w.clock.advance(2_000)
+  expect(await ui.find({ text: /Läuft · 1/ }), 'still working').toBeDefined()
+  expect(w.toasts).toHaveLength(0)
+
+  // The sleep ends, the agent is woken, reports and stops with nothing left in flight.
+  await $.classic.SubagentStop(subagentStop('a1', []))
+  await w.clock.advance(2_000)
+  expect(await ui.find({ text: /Läuft · 0/ }), 'done').toBeDefined()
+  expect(w.toasts.filter(t => t.includes('Maurice ist fertig'))).toHaveLength(1)
+})
+
+test('any agent type gets a crab by default', async ($, on) => {
+  const w = world(on, { [PATH]: TASKS })
+  w.agents = [{ ...builder('a1', 'Code durchsuchen', 'running'), type: 'Explore' }]
+  await start($)
+  const ui = await $.ui.mount({ plugin: 'builder-hud', surface: 'desktop', component: 'Pane', requestId: 'crew', props: paneProps })
+
+  expect(await ui.find({ text: /Läuft · 1/ })).toBeDefined()
+  expect(JSON.stringify(await ui.drawn())).toContain('Code durchsuchen')
+})
+
+test('crew = builder leaves other agent types out', { options: { crew: 'builder' } }, async ($, on) => {
+  const w = world(on, { [PATH]: TASKS })
+  w.agents = [{ ...builder('a1', 'Code durchsuchen', 'running'), type: 'Explore' }, builder('a2', 'Diddy: bauen', 'running')]
+  await start($)
+  const ui = await $.ui.mount({ plugin: 'builder-hud', surface: 'desktop', component: 'Pane', requestId: 'crew', props: paneProps })
+
+  expect(await ui.find({ text: /Läuft · 1/ })).toBeDefined()
+  expect(JSON.stringify(await ui.drawn())).not.toContain('Code durchsuchen')
+})
+
 test('the band yields to a survey', async ($, on) => {
   world(on, { [PATH]: TASKS })
   await start($)

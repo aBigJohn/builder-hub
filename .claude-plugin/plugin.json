@@ -1,5 +1,14 @@
 {
   "name": "builder-hud",
-  "description": "Prompt band with builder crabs, context and 5-hour usage bars, and a task tab; panes for the builder crew and TASKS.md",
-  "types": "./types/index.d.ts"
+  "description": "Prompt band with agent crabs, context and 5-hour usage bars, and a task tab; panes for the agent crew and TASKS.md",
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "crew": {
+      "type": "string",
+      "title": "Crew",
+      "description": "Wer eine Krabbe bekommt: alle Agents oder nur Agents vom Typ builder",
+      "options": ["alle", "builder"],
+      "default": "alle"
+    }
+  }
 }

@@ -224,13 +224,26 @@ const activeMilestone = (list: readonly TaskFile[]) => {
 
 const BUILDER_TYPE = 'builder'
 const isBuilderType = (type: string) => type === BUILDER_TYPE || type.endsWith(`:${BUILDER_TYPE}`)
-const isBuilder = (agent: AgentInfo) => isBuilderType(agent.type)
+
+// Who gets a crab: every agent ('alle', the default) or only those of type builder.
+// Set from the plugin's options each time register runs.
+let isBuildersOnly = false
+const isCrewType = (type: string) => !isBuildersOnly || isBuilderType(type)
+const isCrewAgent = (agent: AgentInfo) => isCrewType(agent.type)
 
 const crewStatusOf = (status: AgentInfo['status']): CrewStatus =>
   status === 'completed' ? 'done'
     : status === 'failed' || status === 'killed' ? 'failed'
       : status === 'running' || status === 'pending' ? 'working'
         : 'waiting'
+
+const hasBackground = (member: CrewMember | undefined) => (member?.backgroundIds?.length ?? 0) > 0
+
+/** An agent whose turn ended while its own background task still runs keeps working. */
+const statusOf = (agent: AgentInfo, member: CrewMember | undefined): CrewStatus => {
+  const status = crewStatusOf(agent.status)
+  return status === 'done' && hasBackground(member) ? 'working' : status
+}
 
 const isEnded = (status: CrewStatus) => status === 'done' || status === 'failed'
 
@@ -272,15 +285,15 @@ const endMember = async ($: EngineInterface, id: string, status: CrewStatus) => 
 }
 
 const syncCrew = async ($: EngineInterface) => {
-  const agents = (await $.agent.list()).filter(isBuilder)
+  const agents = (await $.agent.list()).filter(isCrewAgent)
   const now = await $.clock.now()
   const members = (await read($, crew)).map(m => ({ ...m }))
   const toToast: CrewMember[] = []
   let isChanged = false
 
   for (const agent of agents) {
-    const status = crewStatusOf(agent.status)
     const known = members.find(m => m.id === agent.id)
+    const status = statusOf(agent, known)
     if (!known) {
       members.push({ id: agent.id, ...identify(agent.description, members), status, startedAt: now, endedAt: isEnded(status) ? now : null, isNotified: isEnded(status) })
       isChanged = true
@@ -315,6 +328,36 @@ const syncCrew = async ($: EngineInterface) => {
     await update($, beat, n => n + 1)
   }
   for (const member of toToast) toastFinished($, member)
+}
+
+// ---------------------------------------------------------------- background tasks
+
+const BACKGROUND_TOOLS = new Set(['Bash', 'PowerShell', 'Monitor'])
+
+/** The task id a backgrounded Bash/PowerShell (`backgroundTaskId`) or a Monitor (`taskId`) answers. */
+const backgroundIdOf = (result: unknown): string | undefined => {
+  if (typeof result !== 'object' || result === null) return undefined
+  const { backgroundTaskId, taskId } = result as { backgroundTaskId?: unknown; taskId?: unknown }
+  const id = backgroundTaskId ?? taskId
+  return typeof id === 'string' && id !== '' ? id : undefined
+}
+
+const trackBackground = async ($: EngineInterface, agentId: string, taskId: string) => {
+  await update($, crew, list =>
+    list.map(m => (m.id === agentId && !(m.backgroundIds ?? []).includes(taskId) ? { ...m, backgroundIds: [...(m.backgroundIds ?? []), taskId] } : m)),
+  )
+}
+
+/** Drops every tracked task the engine no longer lists as in flight, then settles the crew. */
+const pruneBackground = async ($: EngineInterface, inFlight: readonly { id: string }[] | undefined) => {
+  if (!inFlight) return
+  const live = new Set(inFlight.map(t => t.id))
+  await update($, crew, list =>
+    list.some(m => (m.backgroundIds ?? []).some(id => !live.has(id)))
+      ? list.map(m => ({ ...m, backgroundIds: (m.backgroundIds ?? []).filter(id => live.has(id)) }))
+      : list,
+  )
+  await syncCrew($)
 }
 
 // List prices in USD per million tokens [input, output, cache read, cache write]; an estimate.
@@ -375,7 +418,7 @@ type PaneId = typeof TASKS_PANE | typeof CREW_PANE
 
 const PANE_OPTIONS: Record<PaneId, { title: string; columns: number }> = {
   tasks: { title: 'Aufgaben', columns: 52 },
-  crew: { title: 'Builder-Crew', columns: 60 },
+  crew: { title: 'Crew', columns: 60 },
 }
 
 const setPaneFlag = ($: EngineInterface, id: PaneId, isOpen: boolean) =>
@@ -401,7 +444,9 @@ const togglePane = async ($: EngineInterface, id: PaneId) => {
 
 // ---------------------------------------------------------------- register
 
-export const register: Register = on => {
+export const register: Register = (on, options) => {
+  isBuildersOnly = options.crew === 'builder'
+
   on('session.start', async ($, e, next) => {
     const result = await next(e)
 
@@ -412,7 +457,7 @@ export const register: Register = on => {
       // The first session.measure fills the meters instead.
     }
     await $.command.register({ name: 'tasks', description: 'Aufgabenliste (TASKS.md) im Seitenpanel öffnen' }).catch(() => undefined)
-    await $.command.register({ name: 'crew', description: 'Builder-Crew im Seitenpanel öffnen' }).catch(() => undefined)
+    await $.command.register({ name: 'crew', description: 'Agent-Crew im Seitenpanel öffnen' }).catch(() => undefined)
     await rescanTasks($, true).catch(() => undefined)
     await syncCrew($).catch(() => undefined)
     // A reload keeps the engine's panes open while the module starts over: re-read them.
@@ -443,14 +488,40 @@ export const register: Register = on => {
     return next(e)
   })
 
-  // A builder joins the crew as it spawns; observing only, never refusing a spawn.
+  // An agent joins the crew as it spawns; observing only, never refusing a spawn.
   on('agent.spawn', async ($, e, next) => {
     const result = await next(e)
-    if (result.agentId && isBuilderType(e.subagentType)) {
+    if (result.agentId && isCrewType(e.subagentType)) {
       await addMember($, result.agentId, e.description).catch(() => undefined)
     }
     return result
   }).catch(($, e, next) => next(e))
+
+  // A crew member that backgrounds a command keeps working until that command ends,
+  // even after its own turn is over. Observing only: the result passes untouched.
+  on('tool.call', async ($, e, next) => {
+    const result = await next(e)
+    if (e.agentId && BACKGROUND_TOOLS.has(e.tool) && 'result' in result && !result.isError) {
+      const taskId = backgroundIdOf(result.result)
+      if (taskId && (await read($, crew)).some(m => m.id === e.agentId)) {
+        await trackBackground($, e.agentId, taskId).catch(() => undefined)
+      }
+    }
+    return result
+  })
+
+  // Each stop lists the session's background work still in flight: what is missing has ended.
+  on('classic.SubagentStop', async ($, e, next) => {
+    const result = await next(e)
+    await pruneBackground($, e.background_tasks).catch(() => undefined)
+    return result
+  })
+
+  on('classic.Stop', async ($, e, next) => {
+    const result = await next(e)
+    await pruneBackground($, e.background_tasks).catch(() => undefined)
+    return result
+  })
 
   // Builder figures come from their own model requests; the main loop passes untouched.
   on('turn.step', async function* ($, e, next) {
@@ -464,8 +535,9 @@ export const register: Register = on => {
 
   on('turn.complete', async ($, e, next) => {
     if (e.agentId) {
-      const members = await read($, crew)
-      if (members.some(m => m.id === e.agentId)) {
+      const member = (await read($, crew)).find(m => m.id === e.agentId)
+      // An answer while its background task runs is a pause, not the end.
+      if (member && !(e.reason === 'answer' && hasBackground(member))) {
         await endMember($, e.agentId, e.reason === 'answer' ? 'done' : 'failed').catch(() => undefined)
       }
     } else {
@@ -497,8 +569,8 @@ export const register: Register = on => {
   on('command.run', { command: 'crew' }, async $ => {
     await syncCrew($).catch(() => undefined)
     await openPane($, CREW_PANE)
-    return { text: 'Builder-Crew geöffnet.' }
-  }).catch(() => ({ text: 'Builder-Crew konnte nicht geöffnet werden.' }))
+    return { text: 'Crew geöffnet.' }
+  }).catch(() => ({ text: 'Crew konnte nicht geöffnet werden.' }))
 
   // ------------------------------------------------------------ the band
 
@@ -808,7 +880,7 @@ export const register: Register = on => {
     )
     const empty = members.length === 0 && (
       <Box flexDirection="column" marginTop={1}>
-        <Text color={NEON.muted}>Noch keine Builder in dieser Sitzung.</Text>
+        <Text color={NEON.muted}>Noch keine Agents in dieser Sitzung.</Text>
         <Text color={NEON.muted}>Sag im Chat z. B.: „Gib die nächste Aufgabe an einen Builder.“</Text>
       </Box>
     )

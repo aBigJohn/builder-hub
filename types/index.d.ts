@@ -43,6 +43,12 @@ export type CrewMember = {
   endedAt: number | null
   /** True once the "finished" toast was shown, so a flicker never toasts twice. */
   isNotified: boolean
+  /**
+   * Background tasks (Bash/PowerShell run_in_background, Monitor) this agent started that may
+   * still run. While any is left, an agent whose turn ended still counts as working.
+   * Absent in state written by an older version.
+   */
+  backgroundIds?: string[]
 }
 
 /** Live figures of one builder, summed over its model requests. */
