@@ -14,9 +14,9 @@ OUTFITS = [
     "Lila Stirnband, schwarze Pistole seitlich",
     "Grüne Kappe, Flagge Bulgariens",
     "Kapitänsmütze, Pfeife, graubraune Katze",
-    "Bauhelm, Spitzhacke, Ölfass „OIL“",
+    "Bauhelm, Ölfass „OIL“",
     "Weiße Haare, Insel mit Palme",
-    "Pirat mit Haufen Goldmünzen",
+    "Zylinder mit rotem Band, Haufen Goldmünzen",
 ]
 
 cards = []

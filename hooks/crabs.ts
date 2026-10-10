@@ -101,16 +101,13 @@ export const DESIGNS: readonly Design[] = [
     palette: { w: '#F9FAFB', b: '#2563EB', k: '#4B5563', n: '#7C4A2D', s: '#9CA3AF', c: '#8B7D6B', d: '#5C5145', e: '#84CC16' },
   },
   {
-    name: 'Diddy', // hard hat and pickaxe, a black oil barrel beside him
+    name: 'Diddy', // hard hat, a black oil barrel beside him
     accent: '#CA8A04',
     sprite: [
       BLANK,
       BLANK,
-      '...SSS....yyyyyy..........',
-      '..S.n.S.YYYYYYYYYY........',
-      '....n.....................',
-      '....n.....................',
-      '....n.....................',
+      '..........yyyyyy..........',
+      '........YYYYYYYYYY........',
     ],
     scene: [
       BLANK,
@@ -123,8 +120,7 @@ export const DESIGNS: readonly Design[] = [
       '....................gKKKKg',
       '.....................gggg.',
     ],
-    palette: { S: '#9CA3AF', n: '#8B5A2B', y: '#FACC15', Y: '#CA8A04', K: '#18181B', g: '#71717A', l: '#A1A1AA' },
-    held: 'Sn',
+    palette: { y: '#FACC15', Y: '#CA8A04', K: '#18181B', g: '#71717A', l: '#A1A1AA' },
     label: { text: 'OIL', x: 21, y: 6, w: 4, h: 2, color: '#FACC15' },
   },
   {
@@ -153,16 +149,13 @@ export const DESIGNS: readonly Design[] = [
     palette: { W: '#F8FAFC', w: '#AEB7C4', S: '#F4C95D', s: '#D9A441', B: '#38BDF8', T: '#8B5A2B', G: '#22C55E', g: '#15803D' },
   },
   {
-    name: 'Bibi', // pirate: red bandana, eye patch, cutlass, a pile of gold coins beside him
+    name: 'Bibi', // top hat with a red band, a pile of gold coins beside him
     accent: '#E11D48',
     sprite: [
-      BLANK,
-      '..BS......................',
-      '...BS....rrrrrrrr.........',
-      '...BS...rrwrrwrrwrRR......',
-      '...BS..............RR.....',
-      '..yyyy...kkk..............',
-      '....y.....................',
+      '.........gggggggg.........',
+      '.........gkkkkkkg.........',
+      '.........grrrrrrg.........',
+      '.......gggggggggggg.......',
     ],
     scene: [
       BLANK,
@@ -175,8 +168,7 @@ export const DESIGNS: readonly Design[] = [
       '.....................clccd',
       '....................ccdcdd',
     ],
-    palette: { r: '#DC2626', w: '#E2E8F0', R: '#B91C1C', k: '#111827', S: '#E2E8F0', B: '#94A3B8', y: '#FACC15', c: '#FACC15', d: '#CA8A04', l: '#FEF9C3' },
-    held: 'SBy',
+    palette: { g: '#71717A', k: '#27272A', r: '#E11D48', c: '#FACC15', d: '#CA8A04', l: '#FEF9C3' },
   },
   // </designs>
 ]

@@ -12,9 +12,9 @@ COMMENTS = {
     "Carlos": "purple headband with flying ends, a black pistol held out sideways",
     "Herby": "green cap, the flag of Bulgaria on a pole",
     "Maurice": "captain's cap and pipe, a grey-brown cat sitting beside him",
-    "Diddy": "hard hat and pickaxe, a black oil barrel beside him",
+    "Diddy": "hard hat, a black oil barrel beside him",
     "Jeffrey": "white hair, standing on a small island with a palm tree",
-    "Bibi": "pirate: red bandana, eye patch, cutlass, a pile of gold coins beside him",
+    "Bibi": "top hat with a red band, a pile of gold coins beside him",
 }
 
 
