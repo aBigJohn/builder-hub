@@ -7,6 +7,9 @@ Ein Band über der Chatzeile von Claude Code, mit einer Krabben-Crew für Hinter
 - **Crew:** Pixel-Clawds im Kostüm (Carlos, Herby, Maurice, Diddy, Jeffrey, Bibi). Der Button **Crew** öffnet ein Panel mit allen Agents der Sitzung: Aufgabe, Status, Tokens und Kosten. Wer arbeitet, läuft im Band animiert mit, auch solange ein Agent auf seinen eigenen Hintergrundbefehl wartet (`run_in_background`, Monitor).
 - **Aufgaben:** Der Button öffnet die `TASKS.md` als Panel. Ein Klick hakt eine Aufgabe ab.
 
+- **Builder:** Der Agent-Typ `builder` (Opus, High) kommt mit dem Plugin: ein frischer Agent mit leerem Kontext für genau eine Aufgabe. Er ändert nur die erlaubten Dateien, prüft selbst und meldet kurz zurück.
+- **`/workflow-init`:** Richtet in einem leeren Ordner einen ganzen Arbeitsbereich ein (Grundregeln, `_instructions/`, Projekte mit `TASKS.md`), mit einem kurzen Interview. Der Hauptchat plant und prüft, Builder setzen die Aufgaben um.
+
 Auf dem Desktop (Claude-App, Code-Tab) wird gezeichnet, im Terminal gibt es eine Textversion. Die Farben sind im Tokyo-Night-Neon-Stil.
 
 ## Installieren
