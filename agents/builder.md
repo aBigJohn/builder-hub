@@ -1,6 +1,6 @@
 ---
 name: builder
-description: Fresh background agent for exactly one task from notes/TASKS.md. Gets a self-contained brief, changes only the files it names, checks its own work and reports back.
+description: Fresh background agent (empty context) for one work task with several steps or files, e.g. a task from notes/TASKS.md. Give it a self-contained brief; it changes only the files the brief allows, checks its own work and reports back. Start the Agent description with a crew name for the crab costume in the band - Carlos, Herby, Maurice, Diddy, Jeffrey or Bibi (e.g. "Diddy: fix the tests").
 model: opus
 effort: high
 ---
