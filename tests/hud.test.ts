@@ -31,6 +31,7 @@ const relTo = (files: Record<string, string>) => (path: string) => {
 
 type World = {
   files: Record<string, string>
+  store: Record<string, unknown>
   agents: AgentInfo[]
   toasts: string[]
   openPanes: Set<string>
@@ -38,7 +39,12 @@ type World = {
 }
 
 const world = (on: On, files: Record<string, string>): World => {
-  const w: World = { files, agents: [], toasts: [], openPanes: new Set(), clock: mock.clock(on, { now: NOW }) }
+  const w: World = { files, store: {}, agents: [], toasts: [], openPanes: new Set(), clock: mock.clock(on, { now: NOW }) }
+  on('store.get', (_$, e) => ({ value: w.store[e.key] }))
+  on('store.set', (_$, e) => {
+    w.store[e.key] = e.value
+    return { value: undefined }
+  })
   const rel = relTo(w.files)
   let mtime = 1
   const isDirPrefix = (path: string) => Object.keys(w.files).some(p => p.startsWith(`${path}/`))
@@ -260,6 +266,47 @@ test('crew = builder leaves other agent types out', { options: { crew: 'builder'
 
   expect(await ui.find({ text: /Läuft · 1/ })).toBeDefined()
   expect(JSON.stringify(await ui.drawn())).not.toContain('Code durchsuchen')
+})
+
+test('the week bar sets the weekly usage against an even pace since the reset', async ($, on) => {
+  world(on, { [PATH]: TASKS })
+  await start($)
+  // Reset in 4 days: 3 of 7 days are gone, so an even pace stands at 3/7 = 42.9 %.
+  const resetsAt = new Date(NOW + 4 * 24 * 60 * 60 * 1000).toISOString()
+  await $.session.measure(measure([{ kind: 'seven_day', percentUsed: 30, resetsAt }]))
+
+  const wide = await $.ui.mount({ plugin: 'builder-hud', surface: 'desktop', component: 'AbovePrompt', props: bandProps(200) })
+  const drawn = JSON.stringify(await wide.drawn())
+  expect(drawn, 'used and pace').toContain('30 % · Soll 43 %')
+  expect(drawn, 'day of the week').toContain('Tag 3,0 von 7')
+  expect(drawn, 'time to the reset').toContain('Reset in 4 T 0 h')
+
+  const narrow = await $.ui.mount({ plugin: 'builder-hud', surface: 'desktop', component: 'AbovePrompt', props: bandProps(90) })
+  expect(JSON.stringify(await narrow.drawn()), 'no room, no week bar').not.toContain('Soll 43 %')
+
+  const text = await $.ui.mount({ plugin: 'builder-hud', surface: 'terminal', component: 'AbovePrompt', props: bandProps(200) })
+  expect(await text.find({ text: /30 % · Soll 43 %/ }), 'terminal shows it too').toBeDefined()
+})
+
+const offer = (agent: string) => ({ agent, description: 'x', source: 'plugin', provider: { plugin: 'builder-hud', tier: 'user' } })
+
+test('the Sonnet and Haiku builders are offered only in the dynamic mode, and the mode is kept', async ($, on) => {
+  const w = world(on, { [PATH]: TASKS })
+  on('agent.offer', () => ({ isOffered: true }))
+  await start($)
+
+  expect((await $.agent.offer(offer('builder-hud:builder') as never)).isOffered, 'Opus builder always').toBe(true)
+  expect((await $.agent.offer(offer('builder-hud:builder-light') as never)).isOffered, 'Haiku off by default').toBe(false)
+  expect((await $.agent.offer(offer('builder-hud:builder-medium') as never)).isOffered, 'Sonnet off by default').toBe(false)
+
+  const pane = await $.ui.mount({ plugin: 'builder-hud', surface: 'desktop', component: 'Pane', requestId: 'crew', props: paneProps })
+  expect(await pane.find({ key: 'toggle-dynamic', text: /immer Opus High/ })).toBeDefined()
+  await pane.press({ key: 'toggle-dynamic' })
+
+  expect((await $.agent.offer(offer('builder-hud:builder-light') as never)).isOffered, 'Haiku when on').toBe(true)
+  expect((await $.agent.offer(offer('builder-hud:builder-medium') as never)).isOffered, 'Sonnet when on').toBe(true)
+  expect(w.store.dynamicAgents, 'kept for the next session').toBe(true)
+  expect(await pane.find({ key: 'toggle-dynamic', text: /dynamisch/ })).toBeDefined()
 })
 
 test('the band yields to a survey', async ($, on) => {

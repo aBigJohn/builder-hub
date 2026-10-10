@@ -4,10 +4,12 @@ Ein Band über der Chatzeile von Claude Code, mit einer Krabben-Crew für Hinter
 
 - **Fortschritt:** Ein Balken zeigt den aktuellen Meilenstein aus deiner `TASKS.md`.
 - **Verbrauch:** Darunter stehen das 5-Stunden-Limit (`5h:`) und das Kontextfenster (`C:`), mit dem Prozentwert im Balken.
+- **Woche:** In der Mitte ein großer Balken für das Wochenlimit, gemessen an einem gleichmäßigen Tempo seit dem letzten Reset (pro Tag 1/7, gut 14,3 %). Die Marke zeigt, wo du heute stehen würdest: blau = noch Luft, grün = im Plan, orange = schneller als geplant.
 - **Crew:** Pixel-Clawds im Kostüm (Carlos, Herby, Maurice, Diddy, Jeffrey, Bibi). Der Button **Crew** öffnet ein Panel mit allen Agents der Sitzung: Aufgabe, Status, Tokens und Kosten. Wer arbeitet, läuft im Band animiert mit, auch solange ein Agent auf seinen eigenen Hintergrundbefehl wartet (`run_in_background`, Monitor).
 - **Aufgaben:** Der Button öffnet die `TASKS.md` als Panel. Ein Klick hakt eine Aufgabe ab.
 
 - **Builder:** Der Agent-Typ `builder` (Opus, High) kommt mit dem Plugin: ein frischer Agent mit leerem Kontext für genau eine Aufgabe. Er ändert nur die erlaubten Dateien, prüft selbst und meldet kurz zurück.
+- **Dynamische Agents** (aus per Standard): Mit `/dynamisch` oder dem Schalter im Crew-Panel kommen `builder-medium` (Sonnet, Medium) und `builder-light` (Haiku, Medium) dazu. Claude wählt dann je nach Aufgabe den kleinsten passenden. Aus = immer Opus High. Die Wahl bleibt über Sitzungen erhalten.
 - **`/workflow-init`:** Richtet in einem leeren Ordner einen ganzen Arbeitsbereich ein (Grundregeln, `_instructions/`, Projekte mit `TASKS.md`), mit einem kurzen Interview. Der Hauptchat plant und prüft, Builder setzen die Aufgaben um.
 
 Auf dem Desktop (Claude-App, Code-Tab) wird gezeichnet, im Terminal gibt es eine Textversion. Die Farben sind im Tokyo-Night-Neon-Stil.
@@ -63,7 +65,7 @@ den Befehl im Terminal tippen.
   `##` startet eine Gruppe. Alle anderen Zeilen werden ignoriert.
 - **Crew:** Jeder Agent bekommt eine Krabbe, egal welcher Typ (`general-purpose`, `Explore`, ein eigener `builder` …). Steht in der Beschreibung des Agents `Diddy: Tests reparieren`, trägt er Diddys Kostüm. Ohne Namen bekommt er das nächste freie Kostüm.
   Nur `builder` zeigen: Option `crew` auf `builder` stellen (im `/config`-Menü oder in `settings.json` unter `pluginConfigs`).
-- Befehle: `/tasks` und `/crew` öffnen die Panels.
+- Befehle: `/tasks` und `/crew` öffnen die Panels, `/dynamisch` schaltet die dynamischen Agents.
 
 ## Selbst anpassen
 

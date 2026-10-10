@@ -124,6 +124,61 @@ export const meterRowSvg = (width: number, items: readonly MeterItem[]) => {
   return [open(width, METER_ROW_H, defs), ...parts, `</svg>`].join('')
 }
 
+// ---------------------------------------------------------------- week bar
+
+/** Height of the week bar: as tall as the milestone bar and the meter row together. */
+export const WEEK_H = 36
+
+export type WeekArgs = {
+  width: number
+  /** Used share of the 7-day window, 0-100; null when unknown. */
+  percent: number | null
+  /** Share of the window's time already gone, 0-100: where an even pace would stand now. */
+  pace: number | null
+  /** e.g. "Tag 3,2 von 7 · Reset Mo 14:00" */
+  caption: string
+}
+
+/** Within this many points of the pace counts as on track. */
+const PACE_TOLERANCE = 5
+
+/**
+ * The weekly usage against an even pace: the bar is what was used, the marker where 1/7 per day
+ * would stand now, a tick per day. Below the marker is room left (blue), at it on track (green),
+ * above it ahead of pace (orange).
+ */
+export const weekSvg = (a: WeekArgs) => {
+  const barY = 18
+  const barH = 14
+  const x0 = 2
+  const barW = Math.max(40, a.width - 4)
+  const used = a.percent === null ? 0 : Math.max(0, Math.min(100, a.percent))
+  const delta = a.percent === null || a.pace === null ? 0 : a.percent - a.pace
+  const tones: [Tone, Tone] = Math.abs(delta) <= PACE_TOLERANCE ? ['teal', 'green'] : delta < 0 ? ['blue', 'cyan'] : ['yellow', 'orange']
+  const fillW = used === 0 ? 0 : Math.max(barH, (barW * used) / 100)
+  const ticks: string[] = []
+  for (let day = 1; day < 7; day += 1) {
+    const x = x0 + (barW * day) / 7
+    ticks.push(`<rect x="${(x - 0.6).toFixed(1)}" y="${barY + 3}" width="1.2" height="${barH - 6}" rx="0.6" class="f-tick" opacity="0.8"/>`)
+  }
+  const paceX = a.pace === null ? null : x0 + (barW * Math.max(0, Math.min(100, a.pace))) / 100
+  const status =
+    a.percent === null || a.pace === null
+      ? 'keine Daten'
+      : `${Math.round(a.percent)} % · Soll ${Math.round(a.pace)} %`
+  return [
+    open(a.width, WEEK_H, gradient('wk', tones[0], tones[1])),
+    `<text x="${x0}" y="12" font-size="11" font-weight="600" class="f-fg">Woche</text>`,
+    `<text x="${x0 + 44}" y="12" font-size="10" class="f-muted">${esc(fit(a.caption, Math.max(0, barW - 150), 10))}</text>`,
+    `<text x="${x0 + barW}" y="12" font-size="11" font-weight="600" text-anchor="end" class="f-${tones[1]}">${esc(status)}</text>`,
+    `<rect x="${x0}" y="${barY}" width="${barW}" height="${barH}" rx="7" class="f-track"/>`,
+    fillW > 0 ? `<rect x="${x0}" y="${barY}" width="${fillW.toFixed(1)}" height="${barH}" rx="7" fill="url(#wk)" filter="url(#glow)"/>` : '',
+    ticks.join(''),
+    paceX === null ? '' : `<rect x="${(paceX - 1.2).toFixed(1)}" y="${barY - 3}" width="2.4" height="${barH + 6}" rx="1.2" class="f-fg"/>`,
+    `</svg>`,
+  ].join('')
+}
+
 // ---------------------------------------------------------------- flow bar
 
 export type FlowArgs = {

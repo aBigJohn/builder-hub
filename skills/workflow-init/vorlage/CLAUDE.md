@@ -52,6 +52,8 @@ Comes with the **builder-hud** plugin: the crab band above the prompt and the `b
 - **A builder's "done" is a claim.** Verify it (`verification.md`) before `[x]` in TASKS.md.
   Builders never edit TASKS.md or STATE.md; they report, the main chat records.
 - **Parallel builders only on different files**, and more than 3 at once only after asking.
+- **Dynamic agents** (`/dynamisch`, off by default): then `builder-medium` (Sonnet) and
+  `builder-light` (Haiku) are listed too. Pick the smallest that fits; hard or unclear = `builder`.
 
 ## Layout
 

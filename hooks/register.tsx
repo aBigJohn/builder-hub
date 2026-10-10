@@ -10,7 +10,7 @@ import type {
 
 import type { CrewMember, CrewStats, CrewStatus, Task, TaskFile, TaskGroup, TaskState, UsageSnapshot } from '../types'
 import { CANVAS_H, CANVAS_W, CLAWD_TEXT, DESIGNS, FRAME_MS, LEAD, crabSvg, designOf } from './crabs'
-import { FLOW_H, METER_ROW_H, NEON, crewRowSvg, flowSvg, meterRowSvg, tilesSvg } from './svg'
+import { FLOW_H, METER_ROW_H, NEON, WEEK_H, crewRowSvg, flowSvg, meterRowSvg, tilesSvg, weekSvg } from './svg'
 import type { Level } from './svg'
 
 // ---------------------------------------------------------------- state
@@ -26,6 +26,7 @@ const crew = atom({ plugin: 'builder-hud', key: 'crew' } as const, [])
 const crewStats = atom({ plugin: 'builder-hud', key: 'crewStats' } as const, {})
 const isCrewOpen = atom({ plugin: 'builder-hud', key: 'isCrewOpen' } as const, false)
 const isCrewCollapsed = atom({ plugin: 'builder-hud', key: 'isCrewCollapsed' } as const, false)
+const isDynamic = atom({ plugin: 'builder-hud', key: 'isDynamic' } as const, false)
 
 const TASKS_PANE = 'tasks'
 const CREW_PANE = 'crew'
@@ -66,12 +67,15 @@ const formatReset = (resetsAt: string | null, now: number) => {
 
 const toSnapshot = (context: SessionContextUsage, rateLimits: readonly SessionRateLimit[]): UsageSnapshot => {
   const fiveHour = rateLimits.find(limit => limit.kind === 'five_hour')
+  const week = rateLimits.find(limit => limit.kind === 'seven_day')
   return {
     contextPercent: context.percent ?? null,
     contextTokens: context.tokens ?? null,
     contextWindow: context.window,
     fivePercent: fiveHour?.percentUsed ?? null,
     fiveResetsAt: fiveHour?.resetsAt ?? null,
+    weekPercent: week?.percentUsed ?? null,
+    weekResetsAt: week?.resetsAt ?? null,
   }
 }
 
@@ -97,6 +101,37 @@ const toMeterRows = (snap: UsageSnapshot | null, now: number): MeterRow[] => {
     { key: 'context', label: 'Kontext', short: 'C:', percent: contextPercent, detail: contextDetail, shortDetail: contextShort },
     { key: 'five-hour', label: '5h-Limit', short: '5h:', percent: fivePercent, detail: fiveDetail, shortDetail: fiveShort },
   ]
+}
+
+// ---------------------------------------------------------------- week pace
+
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000
+const WEEK_MAX_W = 640
+// What the right column (up to four crabs and the crew button) takes, roughly, in CSS pixels.
+const RIGHT_COLUMN_W = 260
+const WEEK_MIN_W = 160
+
+type WeekView = { percent: number | null; pace: number | null; caption: string; short: string }
+
+const resetText = (minutes: number) => {
+  const days = Math.floor(minutes / 1440)
+  const hours = Math.floor((minutes % 1440) / 60)
+  return days > 0 ? `Reset in ${days} T ${hours} h` : `Reset in ${hours} h ${String(minutes % 60).padStart(2, '0')} min`
+}
+
+/**
+ * The 7-day window against an even pace: since the last reset every day adds 1/7 (about 14.3 %)
+ * to what could have been used by now.
+ */
+const weekView = (snap: UsageSnapshot | null, now: number): WeekView => {
+  const percent = snap?.weekPercent ?? null
+  const resetAt = snap?.weekResetsAt ? Date.parse(snap.weekResetsAt) : Number.NaN
+  if (percent === null) return { percent, pace: null, caption: 'keine Daten (nur mit Abo)', short: '–' }
+  if (Number.isNaN(resetAt)) return { percent, pace: null, caption: 'Reset unbekannt', short: `${Math.round(percent)} %` }
+  const pace = clamp(((now - (resetAt - WEEK_MS)) / WEEK_MS) * 100)
+  const day = ((pace / 100) * 7).toFixed(1).replace('.', ',')
+  const caption = `Tag ${day} von 7 · ${resetText(Math.max(0, Math.ceil((resetAt - now) / 60_000)))}`
+  return { percent, pace, caption, short: `${Math.round(percent)} % · Soll ${Math.round(pace)} %` }
 }
 
 const textBar = (percent: number | null, cells: number) => {
@@ -222,8 +257,20 @@ const activeMilestone = (list: readonly TaskFile[]) => {
 
 // ---------------------------------------------------------------- crew
 
-const BUILDER_TYPE = 'builder'
-const isBuilderType = (type: string) => type === BUILDER_TYPE || type.endsWith(`:${BUILDER_TYPE}`)
+const BUILDER_TYPE = /(^|:)builder(-medium|-light)?$/
+const isBuilderType = (type: string) => BUILDER_TYPE.test(type)
+// Offered only in the dynamic agents mode; plain `builder` (Opus, high) always is.
+const DYNAMIC_TYPE = /(^|:)builder-(medium|light)$/
+const DYNAMIC_KEY = 'dynamicAgents'
+
+/** Switches the dynamic agents mode and keeps the choice across sessions. */
+const toggleDynamic = async ($: EngineInterface) => {
+  const isOn = !(await read($, isDynamic))
+  await update($, isDynamic, () => isOn)
+  await $.store.set(DYNAMIC_KEY, isOn).catch(() => undefined)
+  $.ui.toast(isOn ? 'Dynamische Agents an: Opus, Sonnet oder Haiku je nach Aufgabe' : 'Dynamische Agents aus: immer Opus High')
+  return isOn
+}
 
 // Who gets a crab: every agent ('alle', the default) or only those of type builder.
 // Set from the plugin's options each time register runs.
@@ -461,6 +508,9 @@ export const register: Register = (on, options) => {
     }
     await $.command.register({ name: 'tasks', description: 'Aufgabenliste (TASKS.md) im Seitenpanel öffnen' }).catch(() => undefined)
     await $.command.register({ name: 'crew', description: 'Agent-Crew im Seitenpanel öffnen' }).catch(() => undefined)
+    await $.command.register({ name: 'dynamisch', description: 'Dynamische Agents an/aus (Opus, Sonnet oder Haiku je nach Aufgabe)' }).catch(() => undefined)
+    const storedDynamic = await $.store.get(DYNAMIC_KEY).catch(() => undefined)
+    await update($, isDynamic, () => storedDynamic === true)
     await rescanTasks($, true).catch(() => undefined)
     await syncCrew($).catch(() => undefined)
     // A reload keeps the engine's panes open while the module starts over: re-read them.
@@ -490,6 +540,12 @@ export const register: Register = (on, options) => {
     await update($, snapshot, () => toSnapshot(e.context, e.rateLimits))
     return next(e)
   })
+
+  // The Sonnet and Haiku builders are offered only while the dynamic agents mode is on.
+  on('agent.offer', async ($, e, next) => {
+    if (DYNAMIC_TYPE.test(e.agent) && !(await read($, isDynamic))) return { isOffered: false }
+    return next(e)
+  }).catch(($, e, next) => next(e))
 
   // An agent joins the crew as it spawns; observing only, never refusing a spawn.
   on('agent.spawn', async ($, e, next) => {
@@ -569,6 +625,11 @@ export const register: Register = (on, options) => {
     return { text: 'Aufgabenliste geöffnet.' }
   }).catch(() => ({ text: 'Aufgabenliste konnte nicht geöffnet werden.' }))
 
+  on('command.run', { command: 'dynamisch' }, async $ => {
+    const isOn = await toggleDynamic($)
+    return { text: isOn ? 'Dynamische Agents sind an.' : 'Dynamische Agents sind aus: immer Opus High.' }
+  }).catch(() => ({ text: 'Modus konnte nicht umgeschaltet werden.' }))
+
   on('command.run', { command: 'crew' }, async $ => {
     await syncCrew($).catch(() => undefined)
     await openPane($, CREW_PANE)
@@ -593,6 +654,7 @@ export const register: Register = (on, options) => {
     const now = await $.clock.now()
 
     const meters = toMeterRows(snap, now)
+    const week = weekView(snap, now)
     const { total, done, doing } = countTasks(taskList)
     const milestone = activeMilestone(taskList)
     const working = members.filter(m => !isEnded(m.status))
@@ -637,6 +699,9 @@ export const register: Register = (on, options) => {
     if (e.surface !== 'terminal' && 'Svg' in table) {
       const { Svg } = table
       const crabH = Math.round((MINI_CRAB_W * CANVAS_H) / CANVAS_W)
+      // The week bar fills the space between the two columns; on a narrow window it steps aside.
+      const roomW = e.props.bodyColumns * PX_PER_COLUMN - FLOW_W - RIGHT_COLUMN_W - 48
+      const weekW = roomW < WEEK_MIN_W ? 0 : Math.min(WEEK_MAX_W, roomW)
       return (
         <Box flexDirection="row" justifyContent="space-between" alignItems="flex-start">
           <Box flexDirection="column" flexShrink={1}>
@@ -676,6 +741,17 @@ export const register: Register = (on, options) => {
             />
             {below}
           </Box>
+          {weekW > 0 ? (
+            <Box flexDirection="column" flexShrink={1} marginLeft={2}>
+              <Svg
+                key="week"
+                source={weekSvg({ width: weekW, percent: week.percent, pace: week.pace, caption: week.caption })}
+                width={weekW}
+                height={WEEK_H}
+                alt={`Woche: ${week.short} · ${week.caption}`}
+              />
+            </Box>
+          ) : null}
           <Box flexDirection="column" alignItems="flex-end" flexShrink={0} marginLeft={2}>
             <Box flexDirection="row" alignItems="center" gap={1}>
               {crewCrabs.map(member => (
@@ -740,6 +816,14 @@ export const register: Register = (on, options) => {
                 </Box>
               )
             })}
+            <Box key="week" flexDirection="row" gap={1}>
+              <Text color={NEON.muted}>Wo:</Text>
+              <Box flexDirection="row">
+                <Text color={NEON.teal}>{textBar(week.percent, 8).filled}</Text>
+                <Text color={NEON.muted}>{textBar(week.percent, 8).empty}</Text>
+              </Box>
+              <Text color={NEON.teal}>{week.short}</Text>
+            </Box>
             {below}
           </Box>
         </Box>
@@ -837,6 +921,7 @@ export const register: Register = (on, options) => {
     const members = await read($, crew)
     const stats = await read($, crewStats)
     const isCollapsed = await read($, isCrewCollapsed)
+    const isDynamicOn = await read($, isDynamic)
     await read($, beat)
     const frameNo = await read($, frame)
     const now = await $.clock.now()
@@ -861,6 +946,15 @@ export const register: Register = (on, options) => {
       return `${s.model || 'startet …'}${s.effort ? ` · ${s.effort}` : ''}${member.status === 'failed' ? ' · Fehler' : ''}`
     }
 
+    // The mode switch: always Opus High, or Opus / Sonnet / Haiku by how hard the task is.
+    const modeRow = (
+      <Box flexDirection="row" justifyContent="space-between" marginTop={1}>
+        <Text color={NEON.muted}>Agents</Text>
+        <Button key="toggle-dynamic" plain dimColor={!isDynamicOn} onPress={() => toggleDynamic($)}>
+          {isDynamicOn ? '◉ dynamisch (Opus/Sonnet/Haiku)' : '○ immer Opus High'}
+        </Button>
+      </Box>
+    )
     const header = (
       <Box flexDirection="row" justifyContent="space-between" marginTop={1}>
         <Text color={working.length > 0 ? NEON.cyan : NEON.muted}>{`Läuft · ${working.length}`}</Text>
@@ -927,6 +1021,7 @@ export const register: Register = (on, options) => {
             height={48}
             alt={`Kosten ${usdText(totalUsd)}, Tokens ${formatTokens(totalTokens)}, Zeit ${clockText(lastEnd - firstStart)}`}
           />
+          {modeRow}
           {header}
           {working.map(row)}
           {finishedToggle}
@@ -958,6 +1053,7 @@ export const register: Register = (on, options) => {
     return (
       <Box flexDirection="column">
         <Text color={NEON.fg}>{`Kosten ${usdText(totalUsd)} · Tokens ${formatTokens(totalTokens)} · Zeit ${clockText(lastEnd - firstStart)}`}</Text>
+        {modeRow}
         {header}
         {working.map(textRow)}
         {finishedToggle}

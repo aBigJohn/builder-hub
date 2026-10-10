@@ -4,6 +4,9 @@ export type UsageSnapshot = {
   contextWindow: number
   fivePercent: number | null
   fiveResetsAt: string | null
+  /** The 7-day window; absent in a snapshot an older version wrote. */
+  weekPercent?: number | null
+  weekResetsAt?: string | null
 }
 
 export type TaskState = 'open' | 'doing' | 'done'
@@ -80,6 +83,8 @@ declare module 'claude-code' {
       crewStats: Record<string, CrewStats>
       isCrewOpen: boolean
       isCrewCollapsed: boolean
+      /** Dynamic agents mode: builder-medium (Sonnet) and builder-light (Haiku) are offered too. */
+      isDynamic: boolean
     }
   }
 }
