@@ -239,10 +239,13 @@ const crewStatusOf = (status: AgentInfo['status']): CrewStatus =>
 
 const hasBackground = (member: CrewMember | undefined) => (member?.backgroundIds?.length ?? 0) > 0
 
-/** An agent whose turn ended while its own background task still runs keeps working. */
+/**
+ * An agent whose turn ended while its own background task still runs keeps working: the
+ * engine lists it as `waiting` (held on background work it owns), or as `completed`.
+ */
 const statusOf = (agent: AgentInfo, member: CrewMember | undefined): CrewStatus => {
   const status = crewStatusOf(agent.status)
-  return status === 'done' && hasBackground(member) ? 'working' : status
+  return (status === 'done' || status === 'waiting') && hasBackground(member) ? 'working' : status
 }
 
 const isEnded = (status: CrewStatus) => status === 'done' || status === 'failed'

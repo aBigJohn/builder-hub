@@ -228,7 +228,14 @@ test('a builder keeps working while its own background command runs', async ($, 
   expect(await ui.find({ text: /Läuft · 1/ }), 'still working').toBeDefined()
   expect(w.toasts).toHaveLength(0)
 
+  // What the engine really lists while it waits on that sleep: waiting, held on its own work.
+  w.agents = [builder('a1', 'Maurice: 2 Minuten warten', 'waiting')]
+  await w.clock.advance(2_000)
+  expect(await ui.find({ text: /Läuft · 1/ }), 'waiting on its own sleep still works').toBeDefined()
+  expect(JSON.stringify(await ui.drawn()), 'drawn as working').toContain('arbeitet')
+
   // The sleep ends, the agent is woken, reports and stops with nothing left in flight.
+  w.agents = [builder('a1', 'Maurice: 2 Minuten warten', 'completed')]
   await $.classic.SubagentStop(subagentStop('a1', []))
   await w.clock.advance(2_000)
   expect(await ui.find({ text: /Läuft · 0/ }), 'done').toBeDefined()
