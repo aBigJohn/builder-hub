@@ -1,0 +1,9 @@
+// Temporary: dumps every costume as a large SVG for a naming gallery.
+import { expect, test } from 'claude-code/testing'
+
+import { DESIGNS, crabSvg } from '../hooks/crabs'
+
+test('gallery dump', () => {
+  const all = DESIGNS.map((d, i) => ({ name: d.name, accent: d.accent, idle: crabSvg(i, 'done', 200, false), working: crabSvg(i, 'working', 200, false) }))
+  expect(JSON.stringify(all)).toBe('')
+})

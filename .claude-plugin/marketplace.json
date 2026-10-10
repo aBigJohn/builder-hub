@@ -1,0 +1,5 @@
+{
+  "name": "builder-hub",
+  "owner": { "name": "aBigJohn" },
+  "plugins": [{ "name": "builder-hud", "source": "./" }]
+}

@@ -1,0 +1,8 @@
+# Written by Claude Code at every load (API types, the loader's own MCP tool list)
+.claude-plugin/types/
+
+# Local previews from the design kit
+*.png
+dump.txt
+gallery.html
+__pycache__/
