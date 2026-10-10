@@ -248,22 +248,44 @@ export const CRAB_STYLE = [
 ].join('')
 
 /**
- * The crab and its scene as a group placed at (x, y) and scaled; `isWorking` makes him walk
- * (needs CRAB_STYLE in the surrounding SVG), `isFaded` draws it at half strength.
+ * One step of the animations drawn as still pictures. The app draws a plain Svg as an image,
+ * which never animates, and an animated (interactive) Svg as a frame that flashes on every
+ * redraw; so the hooks count a frame up every FRAME_MS and the drawings take its pose.
  */
-export const crabGroup = (designIndex: number, x: number, y: number, scale: number, isWorking: boolean, isFaded = false) => {
+export const FRAME_MS = 250
+
+/** The walk cycle of CRAB_STYLE at one frame: how far each part is lifted. */
+const poseOf = (frame: number) => ({
+  whole: frame % 4 === 1 || frame % 4 === 2 ? -0.3 : 0,
+  'arm-l': frame % 2 === 1 ? -1 : 0,
+  'arm-r': frame % 2 === 0 ? -1 : 0,
+  'leg-a': frame % 2 === 0 ? -0.5 : 0,
+  'leg-b': frame % 2 === 1 ? -0.5 : 0,
+})
+
+const lift = (dy: number) => (dy === 0 ? '' : ` transform="translate(0 ${dy})"`)
+
+/**
+ * The crab and its scene as a group placed at (x, y) and scaled; `isWorking` makes him walk,
+ * in the pose of `frame` when given, else by CSS (needs CRAB_STYLE in the surrounding SVG).
+ * `isFaded` draws it at half strength.
+ */
+export const crabGroup = (designIndex: number, x: number, y: number, scale: number, isWorking: boolean, isFaded = false, frame?: number) => {
   const design = designOf(designIndex)
   const { scene, crab } = pixelsOf(design)
   const part = (name: Part) => rects(crab.filter(p => p.part === name))
+  const pose = isWorking && frame !== undefined ? poseOf(frame) : null
+  const moving = (name: 'arm-l' | 'arm-r' | 'leg-a' | 'leg-b') =>
+    `<g class="${name}"${pose ? lift(pose[name]) : ''}>${part(name)}</g>`
   return [
-    `<g transform="translate(${x} ${y}) scale(${scale})" class="${isWorking ? 'cw' : ''}" opacity="${isFaded ? 0.5 : 1}" shape-rendering="crispEdges">`,
+    `<g transform="translate(${x} ${y}) scale(${scale})" class="${isWorking && !pose ? 'cw' : ''}" opacity="${isFaded ? 0.5 : 1}" shape-rendering="crispEdges">`,
     `<g>${rects(scene)}${design.label ? labelSvg(design.label) : ''}</g>`,
-    `<g class="whole">`,
+    `<g class="whole"${pose ? lift(pose.whole) : ''}>`,
     `<g>${part('body')}</g>`,
-    `<g class="arm-l">${part('arm-l')}</g>`,
-    `<g class="arm-r">${part('arm-r')}</g>`,
-    `<g class="leg-a">${part('leg-a')}</g>`,
-    `<g class="leg-b">${part('leg-b')}</g>`,
+    moving('arm-l'),
+    moving('arm-r'),
+    moving('leg-a'),
+    moving('leg-b'),
     `</g></g>`,
   ].join('')
 }
@@ -281,13 +303,13 @@ const badge = (status: CrewStatus) => {
   return ''
 }
 
-/** A standalone crab SVG of the given width, with a done/failed badge if asked. */
-export const crabSvg = (designIndex: number, status: CrewStatus, width: number, hasBadge: boolean) => {
+/** A standalone crab SVG of the given width, with a done/failed badge if asked; `frame` as crabGroup. */
+export const crabSvg = (designIndex: number, status: CrewStatus, width: number, hasBadge: boolean, frame?: number) => {
   const height = Math.round((width * CANVAS_H) / CANVAS_W)
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${CANVAS_W} ${CANVAS_H.toFixed(2)}">`,
     `<style>${CRAB_STYLE}</style>`,
-    crabGroup(designIndex, 0, 0, 1, status === 'working', status === 'waiting'),
+    crabGroup(designIndex, 0, 0, 1, status === 'working', status === 'waiting', frame),
     hasBadge ? badge(status) : '',
     `</svg>`,
   ].join('')

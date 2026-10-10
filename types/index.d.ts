@@ -65,6 +65,8 @@ declare module 'claude-code' {
       snapshot: UsageSnapshot | null
       tick: number
       beat: number
+      /** Animation frame, counted up every FRAME_MS while a builder works. */
+      frame: number
       files: TaskFile[]
       showDone: boolean
       isTasksOpen: boolean

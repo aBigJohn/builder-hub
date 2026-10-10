@@ -177,6 +177,28 @@ for (const surface of SURFACES) {
   })
 }
 
+test('the band animates by redrawn pictures, never by flashing frames', async ($, on) => {
+  const w = world(on, { [PATH]: TASKS })
+  w.agents = [builder('a1', 'Diddy: Feldnamen korrigieren', 'running')]
+  await start($)
+  const ui = await $.ui.mount({ plugin: 'builder-hud', surface: 'desktop', component: 'AbovePrompt', props: bandProps() })
+  // What the person sees: the tree without its press handles, which change on every redraw.
+  const picture = async () => JSON.stringify(await ui.drawn(), (key, value) => (key === 'press' ? undefined : value))
+
+  const first = await picture()
+  expect(first, 'no interactive Svg').not.toContain('isInteractive')
+  await w.clock.advance(250)
+  const second = await picture()
+  expect(second, 'the next frame is a new picture').not.toBe(first)
+  expect(second, 'still no interactive Svg').not.toContain('isInteractive')
+
+  w.agents = [builder('a1', 'Diddy: Feldnamen korrigieren', 'completed')]
+  await $.turn.complete({ answer: 'done', durationMs: 1, isAborted: false, turnId: 't', agentId: 'a1', reason: 'answer' })
+  const idle = await picture()
+  await w.clock.advance(1_000)
+  expect(await picture(), 'still while nobody works').toBe(idle)
+})
+
 test('the band yields to a survey', async ($, on) => {
   world(on, { [PATH]: TASKS })
   await start($)

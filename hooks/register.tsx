@@ -9,7 +9,7 @@ import type {
 } from 'claude-code'
 
 import type { CrewMember, CrewStats, CrewStatus, Task, TaskFile, TaskGroup, TaskState, UsageSnapshot } from '../types'
-import { CANVAS_H, CANVAS_W, CLAWD_TEXT, DESIGNS, LEAD, crabSvg, designOf } from './crabs'
+import { CANVAS_H, CANVAS_W, CLAWD_TEXT, DESIGNS, FRAME_MS, LEAD, crabSvg, designOf } from './crabs'
 import { FLOW_H, METER_ROW_H, NEON, crewRowSvg, flowSvg, meterRowSvg, tilesSvg } from './svg'
 import type { Level } from './svg'
 
@@ -18,6 +18,7 @@ import type { Level } from './svg'
 const snapshot = atom({ plugin: 'builder-hud', key: 'snapshot' } as const, null)
 const tick = atom({ plugin: 'builder-hud', key: 'tick' } as const, 0)
 const beat = atom({ plugin: 'builder-hud', key: 'beat' } as const, 0)
+const frame = atom({ plugin: 'builder-hud', key: 'frame' } as const, 0)
 const files = atom({ plugin: 'builder-hud', key: 'files' } as const, [])
 const showDone = atom({ plugin: 'builder-hud', key: 'showDone' } as const, false)
 const isTasksOpen = atom({ plugin: 'builder-hud', key: 'isTasksOpen' } as const, false)
@@ -427,6 +428,12 @@ export const register: Register = on => {
       void rescanTasks($).catch(() => undefined)
       if (beats % TICKS_PER_MINUTE === 0) void update($, tick, n => n + 1)
     })
+    // The animations are drawn as pictures, one per frame, and only while someone works.
+    $.clock.every(FRAME_MS, () => {
+      void read($, crew)
+        .then(members => (members.some(m => m.status === 'working') ? update($, frame, n => n + 1) : undefined))
+        .catch(() => undefined)
+    })
 
     return result
   })
@@ -507,6 +514,7 @@ export const register: Register = on => {
     const members = await read($, crew)
     const isTasksPaneOpen = await read($, isTasksOpen)
     const isCrewPaneOpen = await read($, isCrewOpen)
+    const frameNo = await read($, frame)
     const now = await $.clock.now()
 
     const meters = toMeterRows(snap, now)
@@ -549,7 +557,8 @@ export const register: Register = on => {
     // Every Svg gets an explicit size: an interactive (animated) Svg is drawn in a frame that
     // would otherwise take a default height and leave empty space above the prompt.
     // No interactive Svg in the band: an interactive one is a frame, and the band is redrawn
-    // every second or two while a builder works, which made the frames flash.
+    // every second or two while a builder works, which made the frames flash. The twinkle and
+    // the walk are drawn as pictures instead, one per animation frame (FRAME_MS).
     if (e.surface !== 'terminal' && 'Svg' in table) {
       const { Svg } = table
       const crabH = Math.round((MINI_CRAB_W * CANVAS_H) / CANVAS_W)
@@ -569,6 +578,7 @@ export const register: Register = on => {
                     label: flowLabel(milestone),
                     isFinished: milestone.isFinished,
                     isWorking: working.length > 0,
+                    frame: frameNo,
                   })}
                   width={FLOW_W}
                   height={FLOW_H}
@@ -596,7 +606,7 @@ export const register: Register = on => {
               {crewCrabs.map(member => (
                 <Svg
                   key={`crab-${member.id}`}
-                  source={crabSvg(member.design, member.status, MINI_CRAB_W, true)}
+                  source={crabSvg(member.design, member.status, MINI_CRAB_W, true, frameNo)}
                   width={MINI_CRAB_W}
                   height={crabH}
                   alt={`${member.name} ${STATUS_WORD[member.status]}: ${member.task}`}
@@ -753,6 +763,7 @@ export const register: Register = on => {
     const stats = await read($, crewStats)
     const isCollapsed = await read($, isCrewCollapsed)
     await read($, beat)
+    const frameNo = await read($, frame)
     const now = await $.clock.now()
     const table = $.ui.resolve(e)
     const { Box, Button, Text } = table
@@ -806,7 +817,7 @@ export const register: Register = on => {
       const { Svg } = table
       const width = Math.max(240, Math.min(460, e.props.bodyColumns * PX_PER_COLUMN - 8))
       // Rows stay images: their figures change every beat, and an interactive frame would
-      // reload (flash) on each change.
+      // reload (flash) on each change. The crab walks by the animation frame instead.
       const row = (member: CrewMember) => (
         <Svg
           key={`row-${member.id}`}
@@ -821,6 +832,7 @@ export const register: Register = on => {
             stats: statsLine(member),
             status: member.status,
             barShare: member.status === 'done' ? 1 : statOf(member).ctxPercent / 100,
+            frame: frameNo,
           })}
           width={width}
           height={66}

@@ -1,6 +1,6 @@
 // SVG drawings for the desktop surface, in a Tokyo Night neon palette.
 // Palette values follow the Tokyo Night theme as shipped in claude-skins (MIT, hellosverre).
-import { CRAB_STYLE, crabGroup } from './crabs'
+import { CRAB_STYLE, FRAME_MS, crabGroup } from './crabs'
 
 // ---------------------------------------------------------------- palette
 
@@ -135,7 +135,19 @@ export type FlowArgs = {
   label: string
   isFinished: boolean
   isWorking: boolean
+  /** Animation frame (FRAME_MS each): bakes the twinkle and pulse of STYLE into the picture. */
+  frame?: number
 }
+
+/** The periods of STYLE's twinkle classes t0-t3 and of its pulse, in ms. */
+const TWINKLE_MS = [2200, 2800, 1900, 3300] as const
+const PULSE_MS = 1600
+
+/** The opacity an ease-in-out CSS cycle between 1 and `low` has at `ms`. */
+const cycle = (ms: number, periodMs: number, low: number) =>
+  1 - ((1 - low) * (1 - Math.cos((2 * Math.PI * ms) / periodMs))) / 2
+
+const opacityAttr = (value: number | null) => (value === null ? '' : ` opacity="${value.toFixed(2)}"`)
 
 const noise = (c: number, r: number) => {
   const v = Math.sin(c * 12.9898 + r * 78.233) * 43758.5453
@@ -159,6 +171,7 @@ export const flowSvg = (a: FlowArgs) => {
   const fillW = a.total === 0 ? 0 : (trackW * a.done) / a.total
   const faintW = a.total === 0 ? 0 : (trackW * Math.min(a.total, a.done + a.doing)) / a.total
 
+  const ms = a.isWorking && a.frame !== undefined ? a.frame * FRAME_MS : null
   const squares: string[] = []
   const cols = Math.floor(fillW / 3)
   for (let c = 0; c < cols; c += 1) {
@@ -166,7 +179,9 @@ export const flowSvg = (a: FlowArgs) => {
     for (let r = 0; r < rows; r += 1) {
       if (noise(c, r) < density) {
         const tone = (['cyan', 'purple', 'blue'] as const)[Math.floor(noise(r, c) * 3)]
-        squares.push(`<rect x="${(x0 + c * 3 + 0.5).toFixed(1)}" y="${trackY + 0.5 + r * 3}" width="2" height="2" class="f-${a.isFinished ? 'green' : tone} t${(c + r) % 4}"/>`)
+        const phase = (c + r) % 4
+        const twinkle = opacityAttr(ms === null ? null : cycle(ms, TWINKLE_MS[phase], 0.35))
+        squares.push(`<rect x="${(x0 + c * 3 + 0.5).toFixed(1)}" y="${trackY + 0.5 + r * 3}" width="2" height="2" class="f-${a.isFinished ? 'green' : tone} t${phase}"${twinkle}/>`)
       }
     }
   }
@@ -191,7 +206,7 @@ export const flowSvg = (a: FlowArgs) => {
   return [
     open(a.width, H, `${gradient('glowfill', 'purple', 'cyan')}${gradient('pill', a.isFinished ? 'green' : 'purple', a.isFinished ? 'teal' : 'blue')}<clipPath id="trk"><rect x="${x0}" y="${trackY}" width="${trackW}" height="${trackH}" rx="6"/></clipPath>`),
     `<g class="${a.isWorking ? '' : 'idle'}">`,
-    `<circle cx="5" cy="10" r="3.5" class="${a.isFinished ? 'f-green' : 'f-cyan pulse'}" filter="url(#glow)"/>`,
+    `<circle cx="5" cy="10" r="3.5" class="${a.isFinished ? 'f-green' : 'f-cyan pulse'}"${opacityAttr(ms === null || a.isFinished ? null : cycle(ms, PULSE_MS, 0.3))} filter="url(#glow)"/>`,
     `<text x="13" y="14.2" font-size="12" font-weight="600" class="f-fg">${esc(title)}</text>`,
     `<rect x="${x0}" y="${trackY}" width="${trackW}" height="${trackH}" rx="6" class="f-track"/>`,
     `<g clip-path="url(#trk)">`,
@@ -242,13 +257,16 @@ export type CrewRowArgs = {
   status: RowStatus
   /** 0-1 shown as the bar; the context share while the real progress is unknown. */
   barShare: number
+  /** Animation frame, as FlowArgs: the crab walks and the status mark pulses in the picture. */
+  frame?: number
 }
 
 const STATUS_TONE: Record<RowStatus, Tone> = { working: 'cyan', waiting: 'muted', done: 'green', failed: 'red' }
 
-const statusMark = (status: RowStatus, x: number, y: number) => {
+const statusMark = (status: RowStatus, x: number, y: number, frame?: number) => {
   if (status === 'working') {
-    return `<circle cx="${x}" cy="${y}" r="4" class="f-cyan pulse" filter="url(#glow)"/>`
+    const pulse = opacityAttr(frame === undefined ? null : cycle(frame * FRAME_MS, PULSE_MS, 0.3))
+    return `<circle cx="${x}" cy="${y}" r="4" class="f-cyan pulse"${pulse} filter="url(#glow)"/>`
   }
   if (status === 'done') {
     return `<circle cx="${x}" cy="${y}" r="6" class="f-green" filter="url(#glow)"/><path d="M${x - 2.6} ${y} l1.8 1.8 l3.4 -3.6" stroke="#1a1b26" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`
@@ -269,14 +287,14 @@ export const crewRowSvg = (a: CrewRowArgs) => {
   const tone = STATUS_TONE[a.status]
   return [
     open(a.width, H, `<linearGradient id="bar" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="${a.accent}"/><stop offset="1" class="s-${a.status === 'done' ? 'green' : 'cyan'}"/></linearGradient>`),
-    crabGroup(a.design, 2, 14, 1.8, a.status === 'working', a.status === 'waiting'),
+    crabGroup(a.design, 2, 14, 1.8, a.status === 'working', a.status === 'waiting', a.frame),
     `<text x="${textX}" y="18" font-size="13" font-weight="600" class="f-fg">${esc(fit(a.title, a.width - textX - 28, 13))}</text>`,
     `<text x="${textX}" y="35" font-size="12"><tspan font-weight="600" fill="${a.accent}">${esc(a.name)}</tspan><tspan class="f-muted">${esc(`  ${a.sub}`)}</tspan></text>`,
     `<text x="${textX}" y="51" font-size="11.5" class="f-${tone}">${esc(a.statusWord)}</text>`,
     `<text x="${a.width - 8}" y="51" font-size="12" text-anchor="end" class="f-muted">${esc(a.stats)}</text>`,
     `<rect x="${textX}" y="57" width="${barW}" height="4" rx="2" class="f-track"/>`,
     barFill > 0 ? `<rect x="${textX}" y="57" width="${barFill.toFixed(1)}" height="4" rx="2" fill="url(#bar)" filter="url(#glow)"/>` : '',
-    statusMark(a.status, a.width - 12, 14),
+    statusMark(a.status, a.width - 12, 14, a.frame),
     `</svg>`,
   ].join('')
 }
