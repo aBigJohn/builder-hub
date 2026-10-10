@@ -1,0 +1,112 @@
+// Temporary: draws the band and both panes with demo data for the README screenshots.
+import { expect, mock, test } from 'claude-code/testing'
+import type { AgentInfo } from 'claude-code'
+
+import { DESIGNS, crabSvg } from '../hooks/crabs'
+
+const NOW = Date.parse('2026-10-14T10:00:00Z')
+const DAY = 24 * 60 * 60 * 1000
+const PATH = 'projects/demo_shop/notes/TASKS.md'
+const TASKS = [
+  '# Tasks — Demo-Shop',
+  '',
+  '## M1 — Grundgerüst',
+  '- [x] Projekt anlegen',
+  '- [x] Datenbank-Schema',
+  '- [x] Login',
+  '',
+  '## M2 — Warenkorb',
+  '- [x] Produktliste anzeigen',
+  '- [x] Warenkorb-API',
+  '- [~] Preisberechnung mit Rabatten',
+  '- [~] Tests für den Checkout',
+  '- [~] Fehlertexte vereinheitlichen',
+  '- [ ] Warenkorb im Browser speichern',
+  '',
+  '## M3 — Auslieferung',
+  '- [ ] Zahlungsanbieter anbinden',
+  '- [ ] Lasttest',
+  '- [ ] README und Release',
+].join('\n')
+
+const PROBES = ['notes/TASKS.md', 'projects']
+const rel = (path: string) => {
+  const p = path.replace(/\\/g, '/')
+  const known = [...PROBES, PATH, 'projects/demo_shop', 'projects/demo_shop/notes']
+  return known.filter(k => p === k || p.endsWith(`/${k}`)).sort((a, b) => b.length - a.length)[0] ?? p
+}
+
+const agent = (id: string, description: string, status: AgentInfo['status']): AgentInfo => ({ id, description, type: 'builder-hud:builder', status })
+const AGENTS = [
+  agent('a1', 'Carlos: Warenkorb-API', 'running'),
+  agent('a2', 'Diddy: Preisberechnung mit Rabatten', 'running'),
+  agent('a3', 'Jeffrey: Tests für den Checkout', 'running'),
+  agent('a4', 'Bibi: Fehlertexte vereinheitlichen', 'running'),
+  agent('a5', 'Maurice: Produktbilder komprimieren', 'running'),
+]
+const STATS: Record<string, [string, number, number]> = {
+  a1: ['claude-opus-5-5', 412_000, 9_800],
+  a2: ['claude-opus-5-5', 268_000, 6_100],
+  a3: ['claude-sonnet-5-5', 181_000, 4_200],
+  a4: ['claude-haiku-5-5', 96_000, 2_300],
+  a5: ['claude-haiku-5-5', 54_000, 1_100],
+}
+
+test('docs dump', async ($, on) => {
+  const clock = mock.clock(on, { now: NOW })
+  on('fs.exists', (_$, e) => ({ value: [PATH, 'projects', 'projects/demo_shop', 'projects/demo_shop/notes'].includes(rel(e.path)) }))
+  on('fs.list', () => ({ value: [{ name: 'demo_shop', kind: 'dir' as const, size: 0, mtimeMs: 0, isLink: false }] }))
+  on('fs.stat', () => ({ value: { kind: 'file' as const, size: TASKS.length, mtimeMs: 1, isLink: false } }))
+  on('fs.read', () => ({ value: TASKS }))
+  on('agent.list', () => ({ value: AGENTS }))
+  on('ui.toast', () => ({ value: undefined }))
+  on('ui.panes', () => ({ value: [] }))
+  on('store.get', () => ({ value: true }))
+  on('store.set', () => ({ value: undefined }))
+  on('session.start', (_$, e) => ({ cwd: e.cwd }))
+  on('session.measure', (_$, e) => ({ changed: e.changed }))
+  on('ui.render', (engine, e) => {
+    const { Text } = engine.ui.resolve(e)
+    return h(Text, null, '')
+  })
+  on('turn.complete', () => ({ text: '' }))
+  on('turn.step', async function* (_$, e) {
+    const [model, input, output] = STATS[e.agentId ?? 'a1']
+    return { turnId: e.turnId, index: e.index, answer: '', toolUses: [], stopReason: 'end_turn' as const, usage: { input_tokens: 2_000, output_tokens: output, cache_read_input_tokens: input, cache_creation_input_tokens: 0, model } }
+  })
+
+  await $.session.start({ cwd: 'C:/demo', surface: 'desktop', isInteractive: true })
+  await $.session.measure({
+    context: { tokens: 312_000, window: 1_000_000, percent: 31 },
+    rateLimits: [
+      { kind: 'five_hour', percentUsed: 34, resetsAt: new Date(NOW + 2 * 60 * 60 * 1000 + 20 * 60 * 1000).toISOString() },
+      { kind: 'seven_day', percentUsed: 41, resetsAt: new Date(NOW + 4 * DAY).toISOString() },
+    ],
+    changed: ['context', 'rateLimits'],
+  })
+  for (const id of Object.keys(STATS)) {
+    const effort = STATS[id][0].includes('opus') ? 'high' : 'medium'
+    for await (const _ of $.turn.step({ turnId: `t-${id}`, index: 0, model: STATS[id][0], effort, messageCount: 1, agentId: id } as never)) {
+      // drain
+    }
+  }
+  await clock.advance(6 * 60 * 1000 + 40 * 1000)
+  AGENTS[0] = agent('a1', 'Carlos: Warenkorb-API', 'completed')
+  await $.turn.complete({ answer: 'fertig', durationMs: 1, isAborted: false, turnId: 't-a1', agentId: 'a1', reason: 'answer' })
+  await clock.advance(2 * 60 * 1000 + 50 * 1000)
+
+  const bandProps = { hasSurvey: false, isWorking: false, maxRows: 10, bodyColumns: 112, scroll: { offset: 0, bodyRows: 10 }, view: {} }
+  const paneProps = { title: 'x', isFocused: false, bodyColumns: 60, placement: 'dock' as const, scroll: { offset: 0, bodyRows: 60 }, view: {} }
+  const band = await $.ui.mount({ plugin: 'builder-hud', surface: 'desktop', component: 'AbovePrompt', props: bandProps })
+  const frames: unknown[] = []
+  for (let i = 0; i < 12; i += 1) {
+    frames.push(await band.drawn())
+    await clock.advance(250)
+  }
+  const crew = await $.ui.mount({ plugin: 'builder-hud', surface: 'desktop', component: 'Pane', requestId: 'crew', props: paneProps })
+  const tasks = await $.ui.mount({ plugin: 'builder-hud', surface: 'desktop', component: 'Pane', requestId: 'tasks', props: { ...paneProps, bodyColumns: 52 } })
+  await tasks.press({ key: 'toggle-done' })
+  const lineup = DESIGNS.map((d, i) => ({ name: d.name, accent: d.accent, svg: crabSvg(i, 'working', 150, false, 3) }))
+  const dump = { frames, crew: await crew.drawn(), tasks: await tasks.drawn(), lineup }
+  expect(JSON.stringify(dump, (key, value) => (key === 'press' ? undefined : value))).toBe('')
+})

@@ -1,6 +1,6 @@
 # Claude-Workflow-Vorlage
 
-Eine leere, allgemeine Kopie des Arbeitsablaufs, mit dem Stefan seine Projekte mit Claude Code baut.
+Eine leere, allgemeine Kopie eines erprobten Arbeitsablaufs für Projekte mit Claude Code.
 Nichts darin ist auf ein Thema festgelegt. Die Lücken (`{{...}}`) füllt dein Claude in der ersten
 Sitzung selbst, nachdem es dich gefragt hat, was du bauen willst.
 

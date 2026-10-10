@@ -3,6 +3,7 @@
 
 # Local previews from the design kit
 *.png
+!docs/*.png
 dump.txt
 gallery.html
 __pycache__/
