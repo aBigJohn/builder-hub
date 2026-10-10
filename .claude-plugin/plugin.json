@@ -1,6 +1,5 @@
 {
   "name": "builder-hud",
-  "version": "0.1.0",
   "description": "Prompt band with builder crabs, context and 5-hour usage bars, and a task tab; panes for the builder crew and TASKS.md",
   "types": "./types/index.d.ts"
 }

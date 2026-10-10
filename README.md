@@ -19,7 +19,14 @@ Auf dem Desktop (Claude-App, Code-Tab) wird gezeichnet, im Terminal gibt es eine
 
 Bestätige „Add marketplace?“ mit `y` und wähle den Scope „user“. Danach läuft der Mod in jeder neuen
 Sitzung, auch im Code-Tab der Desktop-App. Dort selbst gibt es den `/plugin`-Befehl nicht, deshalb
-den Befehl im Terminal tippen. Updates holst du mit `claude plugin update builder-hud`.
+den Befehl im Terminal tippen.
+
+**Updates:** Jeder Commit hier ist eine neue Version.
+- **Automatisch:** einmal in `claude` im Terminal `/plugin` öffnen → Tab „Marketplaces“ →
+  `builder-hub` → „Enable auto-update“. Claude Code holt neue Versionen dann von selbst, ein paar
+  Minuten nach deiner ersten Nachricht; sie laufen ab der nächsten Sitzung.
+- **Von Hand:** `claude plugin update builder-hud@builder-hub`, danach Claude neu starten oder in
+  einer laufenden Sitzung `/reload-plugins`.
 
 **Oder von Hand** (zum Mitentwickeln):
 
