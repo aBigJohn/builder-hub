@@ -58,20 +58,26 @@ von Hand bearbeiten kannst.
 
 ### Builder: ein frischer Agent pro Aufgabe
 
-Das Plugin bringt den Agent-Typ **`builder`** mit (Opus, Effort High), dazu zwei kleinere (siehe
-unten). Jeder startet mit leerem Kontext, bekommt eine in sich geschlossene Aufgabe, ändert nur die
+Das Plugin bringt drei Builder mit (siehe unten). Jeder startet mit leerem Kontext, bekommt eine in sich geschlossene Aufgabe, ändert nur die
 erlaubten Dateien, prüft seine Arbeit selbst und meldet kurz zurück. Lange Befehle startet er im
 Hintergrund und wartet, ohne Tokens zu verbrauchen.
 
-**Dynamische Agents** (an per Standard): Neben dem Opus-Builder stehen zwei kleinere Builder bereit.
-Claude wählt je Aufgabe den kleinsten passenden. Mit `/dynamisch` oder dem Schalter im Crew-Panel
-schaltest du den Modus aus:
+**Opus plant, Sonnet baut.** Der Hauptchat (am besten Opus oder Fable) schreibt einen genauen Brief:
+Schritte, Dateien, Prüfung. Sonnet setzt ihn um. Opus baut nur, wenn die Aufgabe unklar ist oder
+Sonnet nicht weiterkommt. Das ist billiger. Mit Opus als Advisor löst Sonnet laut Anthropic mehr
+Aufgaben als allein, bei weniger Kosten ([Advisor-Strategie](https://claude.com/blog/the-advisor-strategy)).
+
+**Dynamische Agents** (an per Standard): Claude wählt je Aufgabe den passenden Builder. Mit
+`/dynamisch` oder dem Schalter im Crew-Panel schaltest du den Modus aus:
 
 | Agent | Modell · Effort | Für |
 |---|---|---|
-| `builder` | Opus · high | schwere oder unklare Aufgaben: Entwurf, Fehlersuche, viele Dateien |
-| `builder-medium` | Sonnet · medium | normale, klar beschriebene Aufgaben |
+| `builder-medium` | Sonnet · high | **Standard:** klar beschriebene Aufgaben mit genauem Brief |
+| `builder` | Opus · medium | unklare Bugs, Entwurf, Architektur, oder wenn Sonnet nicht weiterkommt |
 | `builder-light` | Haiku · medium | kleine, mechanische Aufgaben: Umbenennen, Formatieren, Nachschlagen |
+
+**Tipp:** Mit `/advisor opus` kann ein Sonnet-Builder Opus bei schweren Entscheidungen fragen.
+Subagents übernehmen diese Einstellung (Claude Code 2.1.260 oder neuer).
 
 Ist der Modus aus, sieht Claude nur den Opus-Builder. Die Wahl bleibt über Sitzungen erhalten; wer
 ihn früher ausgeschaltet hat, behält „aus“.

@@ -2,7 +2,8 @@
 
 A builder knows nothing of the chat. Everything it needs goes into the brief.
 
-**Agent call:** the builder-hud plugin's builder (`subagent_type: "builder-hud:builder"`), `run_in_background: true`,
+**Agent call:** `subagent_type: "builder-hud:builder-medium"` (Sonnet, the default), or
+`builder-hud:builder` (Opus) for an ambiguous bug or a design decision; `run_in_background: true`,
 `description: "<Name>: <task in a few words>"`. The name picks the crab costume in the band:
 Carlos, Herby, Maurice, Diddy, Jeffrey, Bibi. Mark the task `[~]` in `notes/TASKS.md` when it starts.
 
@@ -11,6 +12,7 @@ Carlos, Herby, Maurice, Diddy, Jeffrey, Bibi. Mark the task `[~]` in `notes/TASK
 ```
 Project: projects/<name>/ — read notes/STATE.md first (Key facts, Bugs already solved).
 Task (from TASKS.md): <the line>
+Steps: <numbered, in order: what to change where, and why>
 Done when: <observable result>
 Files you may change: <paths>
 Do not touch: <paths / areas>

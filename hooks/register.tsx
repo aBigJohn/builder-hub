@@ -272,7 +272,7 @@ const toggleDynamic = async ($: EngineInterface) => {
   const isOn = !(await read($, isDynamic))
   await update($, isDynamic, () => isOn)
   await $.store.set(DYNAMIC_KEY, isOn).catch(() => undefined)
-  $.ui.toast(isOn ? 'Dynamische Agents an: Opus, Sonnet oder Haiku je nach Aufgabe' : 'Dynamische Agents aus: immer Opus High')
+  $.ui.toast(isOn ? 'Dynamische Agents an: Sonnet baut, Opus bei schweren Aufgaben, Haiku bei kleinen' : 'Dynamische Agents aus: immer Opus')
   return isOn
 }
 
@@ -632,7 +632,7 @@ export const register: Register = (on, options) => {
 
   on('command.run', { command: 'dynamisch' }, async $ => {
     const isOn = await toggleDynamic($)
-    return { text: isOn ? 'Dynamische Agents sind an.' : 'Dynamische Agents sind aus: immer Opus High.' }
+    return { text: isOn ? 'Dynamische Agents sind an.' : 'Dynamische Agents sind aus: immer Opus.' }
   }).catch(() => ({ text: 'Modus konnte nicht umgeschaltet werden.' }))
 
   on('command.run', { command: 'crew' }, async $ => {
@@ -957,12 +957,12 @@ export const register: Register = (on, options) => {
       return `${s.model || 'startet …'}${s.effort ? ` · ${s.effort}` : ''}${member.status === 'failed' ? ' · Fehler' : ''}`
     }
 
-    // The mode switch: always Opus High, or Opus / Sonnet / Haiku by how hard the task is.
+    // The mode switch: always Opus, or Sonnet by default with Opus and Haiku by how hard the task is.
     const modeRow = (
       <Box flexDirection="row" justifyContent="space-between" marginTop={1}>
         <Text color={NEON.muted}>Agents</Text>
         <Button key="toggle-dynamic" plain dimColor={!isDynamicOn} onPress={() => toggleDynamic($)}>
-          {isDynamicOn ? '◉ dynamisch (Opus/Sonnet/Haiku)' : '○ immer Opus High'}
+          {isDynamicOn ? '◉ dynamisch (Opus/Sonnet/Haiku)' : '○ immer Opus'}
         </Button>
       </Box>
     )

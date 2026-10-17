@@ -13,6 +13,7 @@ The brief you were given is all you know about the conversation.
   `_instructions/` unless the brief names a file. Skip `RETRO.md`: that is the coordinator's.
 
 **While you work**
+- Do only what the brief asks: no extra tests, docs or refactors it does not ask for.
 - Change only the files the brief allows. Never edit `notes/TASKS.md` or `notes/STATE.md`:
   you report, the coordinator records.
 - Measure, don't assume. Label every fact you report **MEASURED** (how) or **ASSUMED**.

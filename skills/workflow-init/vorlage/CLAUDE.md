@@ -44,16 +44,20 @@ Comes with the **builder-hud** plugin: the crab band above the prompt and the `b
 - **The main chat coordinates:** talks with the user, plans, keeps `notes/TASKS.md` and
   `notes/STATE.md`, checks results. **Small fixes it does itself** (one file, a few lines,
   nothing to explore).
-- **Bigger work goes to a builder:** a fresh background agent per task, empty context. Bigger = several files, a lot of reading, or several steps. Then ask the user:
+- **Bigger work goes to a builder:** a fresh background agent per task, empty context.
+  Bigger = several files, a lot of reading, or several steps. Then ask the user:
   *"Soll ich daraus eine Builder-Aufgabe machen?"* The user decides.
-- **One task, one brief.** A builder knows nothing of the chat: write the brief from
-  `_instructions/templates/task-brief.md`. Description starts with a crew name (`Diddy: ...`).
+- **The main chat plans, a builder builds.** Write a detailed brief from
+  `_instructions/templates/task-brief.md`: steps, files, how to check. A builder knows nothing
+  of the chat. Description starts with a crew name (`Diddy: ...`).
 - **A builder's "done" is a claim.** Verify it (`verification.md`) before `[x]` in TASKS.md.
   Builders never edit TASKS.md or STATE.md; they report, the main chat records.
 - **Parallel builders only on different files**, and more than 3 at once only after asking.
-- **Dynamic agents** (on by default, `/dynamisch` turns them off): `builder` (Opus),
-  `builder-medium` (Sonnet), `builder-light` (Haiku). Pick the smallest that fits; hard or
-  unclear = `builder`. When only `builder` is listed, the mode is off.
+- **Which builder** (dynamic agents, on by default): `builder-medium` (Sonnet, high) is the
+  default. `builder` (Opus) only for an ambiguous bug, a design decision, or a task
+  `builder-medium` reported it could not finish. `builder-light` (Haiku) for small mechanical
+  edits. When only `builder` is listed, `/dynamisch` is off: use it for everything.
+- **Advisor:** with `/advisor opus`, a Sonnet builder can ask Opus at a hard decision.
 - **More than ~5 tasks of the same kind** (e.g. "check every file for X"): propose a Workflow
   instead of single builders, with Haiku for the reading stages and Sonnet for the changes.
   Each agent costs ~20k tokens before it does anything: batch small items (several files per

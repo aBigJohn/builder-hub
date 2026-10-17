@@ -311,7 +311,7 @@ test('the Sonnet and Haiku builders are offered only in the dynamic mode, on by 
   expect((await $.agent.offer(offer('builder-hud:builder-light') as never)).isOffered, 'no Haiku when off').toBe(false)
   expect((await $.agent.offer(offer('builder-hud:builder-medium') as never)).isOffered, 'no Sonnet when off').toBe(false)
   expect(w.store.dynamicAgents, 'kept for the next session').toBe(false)
-  expect(await pane.find({ key: 'toggle-dynamic', text: /immer Opus High/ })).toBeDefined()
+  expect(await pane.find({ key: 'toggle-dynamic', text: /immer Opus/ })).toBeDefined()
 })
 
 test('a stored choice to keep the dynamic mode off survives the new default', async ($, on) => {
