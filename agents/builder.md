@@ -1,8 +1,8 @@
 ---
 name: builder
-description: "Fresh background agent (empty context, Opus, medium effort) for hard or unclear work: an ambiguous bug, an architecture or design decision, many files at once, or a task that builder-medium reported it could not finish. For a well-specified task with a clear brief, use builder-medium instead (when it is listed). Give it a self-contained brief; it changes only the files the brief allows, checks its own work and reports back. Start the Agent description with a crew name for the crab costume in the band - Carlos, Herby, Maurice, Diddy, Jeffrey or Bibi (e.g. \"Diddy: fix the tests\")."
+description: "Fresh background agent (empty context, Opus, high effort) for hard or unclear work: an ambiguous bug, an architecture or design decision, many files at once, or a task that builder-medium reported it could not finish. For a well-specified task with a clear brief, use builder-medium instead (when it is listed). Give it a self-contained brief; it changes only the files the brief allows, checks its own work and reports back. Start the Agent description with a crew name for the crab costume in the band - Carlos, Herby, Maurice, Diddy, Jeffrey or Bibi (e.g. \"Diddy: fix the tests\")."
 model: opus
-effort: medium
+effort: high
 experimental:
   cacheTtl: 1h
 ---

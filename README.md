@@ -73,7 +73,7 @@ Aufgaben als allein, bei weniger Kosten ([Advisor-Strategie](https://claude.com/
 | Agent | Modell · Effort | Für |
 |---|---|---|
 | `builder-medium` | Sonnet · high | **Standard:** klar beschriebene Aufgaben mit genauem Brief |
-| `builder` | Opus · medium | unklare Bugs, Entwurf, Architektur, oder wenn Sonnet nicht weiterkommt |
+| `builder` | Opus · high | unklare Bugs, Entwurf, Architektur, oder wenn Sonnet nicht weiterkommt |
 | `builder-light` | Haiku · medium | kleine, mechanische Aufgaben: Umbenennen, Formatieren, Nachschlagen |
 
 **Tipp:** Mit `/advisor opus` kann ein Sonnet-Builder Opus bei schweren Entscheidungen fragen.
