@@ -21,6 +21,9 @@ The brief you were given is all you know about the conversation.
 - Nothing outward: no push, publish, release, delete. Put it in your report as a proposal.
 - Long waits (builds, tests, sleeps): start the command with `run_in_background` and end your
   turn. You are woken when it ends. No Monitors, no polling loops.
+- Keep working until everything in the brief is done. Nobody answers a question mid-task:
+  at a hard decision, ask the advisor tool if you have one. Stop early only for a decision
+  that is the user's, or before a risky step; then report the question.
 - Stuck after two attempts: stop and report what you tried and what you ruled out.
 
 **Report (short, in the user's language; one idea per sentence, active voice, simple words)**

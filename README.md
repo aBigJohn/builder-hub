@@ -62,17 +62,23 @@ Das Plugin bringt drei Builder mit (siehe unten). Jeder startet mit leerem Konte
 erlaubten Dateien, prüft seine Arbeit selbst und meldet kurz zurück. Lange Befehle startet er im
 Hintergrund und wartet, ohne Tokens zu verbrauchen.
 
-**Opus plant, Sonnet baut.** Der Hauptchat (am besten Opus oder Fable) schreibt einen genauen Brief:
-Schritte, Dateien, Prüfung. Sonnet setzt ihn um. Opus baut nur, wenn die Aufgabe unklar ist oder
-Sonnet nicht weiterkommt. Das ist billiger. Mit Opus als Advisor löst Sonnet laut Anthropic mehr
-Aufgaben als allein, bei weniger Kosten ([Advisor-Strategie](https://claude.com/blog/the-advisor-strategy)).
+**Opus plant, Sonnet baut:**
+1. Du gibst dem Hauptchat (am besten Opus, high) eine Aufgabe. Ist etwas unklar, fragt er dich.
+2. Er plant und teilt große Aufgaben in kleine Briefe: Schritte, Dateien, Prüfung.
+3. Sonnet (medium) baut. Bei schweren Entscheidungen fragt es Opus als Advisor (`/advisor opus`).
+4. Fragen eines Builders beantwortet der Hauptchat selbst, wenn er kann.
+5. Scheitert Sonnet zweimal, übernimmt der Opus-Builder (high), einmal. Scheitert auch er, fragt
+   der Hauptchat dich. So läuft nichts endlos.
+
+Mit Opus als Advisor löst Sonnet laut Anthropic mehr Aufgaben als allein, bei weniger Kosten
+([Advisor-Strategie](https://claude.com/blog/the-advisor-strategy)).
 
 **Dynamische Agents** (an per Standard): Claude wählt je Aufgabe den passenden Builder. Mit
 `/dynamisch` oder dem Schalter im Crew-Panel schaltest du den Modus aus:
 
 | Agent | Modell · Effort | Für |
 |---|---|---|
-| `builder-medium` | Sonnet · high | **Standard:** klar beschriebene Aufgaben mit genauem Brief |
+| `builder-medium` | Sonnet · medium | **Standard:** klar beschriebene Aufgaben mit genauem Brief |
 | `builder` | Opus · high | unklare Bugs, Entwurf, Architektur, oder wenn Sonnet nicht weiterkommt |
 | `builder-light` | Haiku · medium | kleine, mechanische Aufgaben: Umbenennen, Formatieren, Nachschlagen |
 

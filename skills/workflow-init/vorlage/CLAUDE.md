@@ -53,11 +53,18 @@ Comes with the **builder-hud** plugin: the crab band above the prompt and the `b
 - **A builder's "done" is a claim.** Verify it (`verification.md`) before `[x]` in TASKS.md.
   Builders never edit TASKS.md or STATE.md; they report, the main chat records.
 - **Parallel builders only on different files**, and more than 3 at once only after asking.
-- **Which builder** (dynamic agents, on by default): `builder-medium` (Sonnet, high) is the
-  default. `builder` (Opus) only for an ambiguous bug, a design decision, or a task
-  `builder-medium` reported it could not finish. `builder-light` (Haiku) for small mechanical
-  edits. When only `builder` is listed, `/dynamisch` is off: use it for everything.
-- **Advisor:** with `/advisor opus`, a Sonnet builder can ask Opus at a hard decision.
+- **Which builder** (dynamic agents, on by default): `builder-medium` (Sonnet, medium) builds
+  by default. `builder` (Opus, high) only for an ambiguous bug, a design decision, or as the
+  fallback below. `builder-light` (Haiku) for small mechanical edits. When only `builder` is
+  listed, `/dynamisch` is off: use it for everything.
+- **Small briefs:** split a long task (many files or many steps) into several small briefs,
+  one after the other. A detailed plan does not make one huge brief safe.
+- **A builder's question:** answer it yourself if you can and continue that builder
+  (SendMessage). Ask the user only for decisions that are theirs.
+- **Fallback with a brake:** a builder stops after two failed attempts and reports. Then
+  `builder` (Opus, high) takes the task over, once. If it also fails, stop and ask the user.
+  Never a third run without the user's OK.
+- **Advisor:** with `/advisor opus`, a Sonnet builder asks Opus at a hard decision instead of stopping.
 - **More than ~5 tasks of the same kind** (e.g. "check every file for X"): propose a Workflow
   instead of single builders, with Haiku for the reading stages and Sonnet for the changes.
   Each agent costs ~20k tokens before it does anything: batch small items (several files per
