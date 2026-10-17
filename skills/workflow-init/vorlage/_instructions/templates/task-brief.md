@@ -7,12 +7,15 @@ A builder knows nothing of the chat. Everything it needs goes into the brief.
 `description: "<Name>: <task in a few words>"`. The name picks the crab costume in the band:
 Carlos, Herby, Maurice, Diddy, Jeffrey, Bibi. Mark the task `[~]` in `notes/TASKS.md` when it starts.
 
-**Prompt:**
+**Prompt:** the main chat fills every field itself, from the code. It asks the user only
+what the code cannot answer (a wish, a decision).
 
 ```
 Project: projects/<name>/ — read notes/STATE.md first (Key facts, Bugs already solved).
 Task (from TASKS.md): <the line>
 Steps: <numbered, in order: what to change where, and why>
+Pattern to follow: <an existing file or function that does something similar>
+Edge cases: <special cases the change must handle>
 Done when: <observable result>
 Files you may change: <paths>
 Do not touch: <paths / areas>
