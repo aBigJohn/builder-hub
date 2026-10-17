@@ -56,7 +56,11 @@ Comes with the **builder-hud** plugin: the crab band above the prompt and the `b
   unclear = `builder`. When only `builder` is listed, the mode is off.
 - **More than ~5 tasks of the same kind** (e.g. "check every file for X"): propose a Workflow
   instead of single builders, with Haiku for the reading stages and Sonnet for the changes.
-  Run it only after the user agrees to the plan and rough cost.
+  Each agent costs ~20k tokens before it does anything: batch small items (several files per
+  agent), never one agent per tiny item. Reading stages use a read-only agent type
+  (`agentType: 'Explore'`). Run it only after the user agrees to the plan and rough cost, and
+  only from a user message that names the task: workflow agents follow that message and refuse
+  script tasks it does not cover.
 
 ## Layout
 
