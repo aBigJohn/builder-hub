@@ -51,8 +51,8 @@ Richtung: Projekt → `_instructions/`, und zwar erst, wenn du sagst
 
 - Der **Hauptchat** plant mit dir, pflegt `TASKS.md` und `STATE.md` und prüft Ergebnisse.
   Kleine Korrekturen macht er selbst.
-- Größere Aufgaben gehen an einen **Builder**: einen frischen Hintergrund-Agent (Opus, High) mit
-  leerem Kontext, nur für diese eine Aufgabe. Claude fragt vorher: „Soll ich daraus eine
+- Größere Aufgaben gehen an einen **Builder**: einen frischen Hintergrund-Agent mit leerem
+  Kontext, nur für diese eine Aufgabe (Opus, Sonnet oder Haiku, je nachdem wie schwer sie ist). Claude fragt vorher: „Soll ich daraus eine
   Builder-Aufgabe machen?“
 - Im Band siehst du, wer gerade arbeitet (eine Krabbe pro Builder), unter **Crew** Kosten und
   Tokens, unter **Aufgaben** die `TASKS.md`.

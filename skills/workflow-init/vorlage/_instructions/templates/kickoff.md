@@ -10,7 +10,10 @@ Open a session in the **workspace root** and paste something like:
 
 ## What happens next
 
-1. Scaffold `projects/<name>/` (`new-project.ps1`)
+1. Scaffold `projects/<name>/` from the workspace root:
+   `.\_instructions\new-project.ps1 -Name <short_name>`. It seeds `notes/STATE.md`,
+   `notes/TASKS.md` and a project `CLAUDE.md`. Later sessions open in `projects/<name>/`, where
+   both CLAUDE.md files load
 2. **Survey before building:** run a minimal "hello world" on the real target and
    write down what was MEASURED (versions, API limits, how reload works). RETRO lesson 1.
 3. Architecture draft in `_instructions/architecture.md` → **show the user, then commit to it**

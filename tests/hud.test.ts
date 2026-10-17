@@ -294,23 +294,34 @@ test('the week bar sets the weekly usage against an even pace since the reset', 
 
 const offer = (agent: string) => ({ agent, description: 'x', source: 'plugin', provider: { plugin: 'builder-hud', tier: 'user' } })
 
-test('the Sonnet and Haiku builders are offered only in the dynamic mode, and the mode is kept', async ($, on) => {
+test('the Sonnet and Haiku builders are offered only in the dynamic mode, on by default, and the mode is kept', async ($, on) => {
   const w = world(on, { [PATH]: TASKS })
   on('agent.offer', () => ({ isOffered: true }))
   await start($)
 
   expect((await $.agent.offer(offer('builder-hud:builder') as never)).isOffered, 'Opus builder always').toBe(true)
-  expect((await $.agent.offer(offer('builder-hud:builder-light') as never)).isOffered, 'Haiku off by default').toBe(false)
-  expect((await $.agent.offer(offer('builder-hud:builder-medium') as never)).isOffered, 'Sonnet off by default').toBe(false)
+  expect((await $.agent.offer(offer('builder-hud:builder-light') as never)).isOffered, 'Haiku on by default').toBe(true)
+  expect((await $.agent.offer(offer('builder-hud:builder-medium') as never)).isOffered, 'Sonnet on by default').toBe(true)
 
   const pane = await $.ui.mount({ plugin: 'builder-hud', surface: 'desktop', component: 'Pane', requestId: 'crew', props: paneProps })
-  expect(await pane.find({ key: 'toggle-dynamic', text: /immer Opus High/ })).toBeDefined()
+  expect(await pane.find({ key: 'toggle-dynamic', text: /dynamisch/ })).toBeDefined()
   await pane.press({ key: 'toggle-dynamic' })
 
-  expect((await $.agent.offer(offer('builder-hud:builder-light') as never)).isOffered, 'Haiku when on').toBe(true)
-  expect((await $.agent.offer(offer('builder-hud:builder-medium') as never)).isOffered, 'Sonnet when on').toBe(true)
-  expect(w.store.dynamicAgents, 'kept for the next session').toBe(true)
-  expect(await pane.find({ key: 'toggle-dynamic', text: /dynamisch/ })).toBeDefined()
+  expect((await $.agent.offer(offer('builder-hud:builder') as never)).isOffered, 'Opus builder when off').toBe(true)
+  expect((await $.agent.offer(offer('builder-hud:builder-light') as never)).isOffered, 'no Haiku when off').toBe(false)
+  expect((await $.agent.offer(offer('builder-hud:builder-medium') as never)).isOffered, 'no Sonnet when off').toBe(false)
+  expect(w.store.dynamicAgents, 'kept for the next session').toBe(false)
+  expect(await pane.find({ key: 'toggle-dynamic', text: /immer Opus High/ })).toBeDefined()
+})
+
+test('a stored choice to keep the dynamic mode off survives the new default', async ($, on) => {
+  const w = world(on, { [PATH]: TASKS })
+  w.store.dynamicAgents = false
+  on('agent.offer', () => ({ isOffered: true }))
+  await start($)
+
+  expect((await $.agent.offer(offer('builder-hud:builder-light') as never)).isOffered, 'Haiku stays off').toBe(false)
+  expect((await $.agent.offer(offer('builder-hud:builder-medium') as never)).isOffered, 'Sonnet stays off').toBe(false)
 })
 
 test('the band yields to a survey', async ($, on) => {

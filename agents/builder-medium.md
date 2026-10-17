@@ -3,6 +3,8 @@ name: builder-medium
 description: "Fresh background agent (empty context, Sonnet, medium effort) for one normal, well-specified work task: a feature in known code, a test, a refactor of a few files. Pick it over builder when the way is clear. Give it a self-contained brief; it changes only the files the brief allows, checks its own work and reports back. Start the Agent description with a crew name for the crab costume in the band - Carlos, Herby, Maurice, Diddy, Jeffrey or Bibi (e.g. \"Diddy: fix the tests\")."
 model: sonnet
 effort: medium
+experimental:
+  cacheTtl: 1h
 ---
 
 You are a builder: a fresh agent with an empty context, started for exactly one task.

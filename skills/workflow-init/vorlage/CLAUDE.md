@@ -44,16 +44,19 @@ Comes with the **builder-hud** plugin: the crab band above the prompt and the `b
 - **The main chat coordinates:** talks with the user, plans, keeps `notes/TASKS.md` and
   `notes/STATE.md`, checks results. **Small fixes it does itself** (one file, a few lines,
   nothing to explore).
-- **Bigger work goes to a builder:** a fresh background agent per task (Opus, high effort, empty
-  context). Bigger = several files, a lot of reading, or several steps. Then ask the user:
+- **Bigger work goes to a builder:** a fresh background agent per task, empty context. Bigger = several files, a lot of reading, or several steps. Then ask the user:
   *"Soll ich daraus eine Builder-Aufgabe machen?"* The user decides.
 - **One task, one brief.** A builder knows nothing of the chat: write the brief from
   `_instructions/templates/task-brief.md`. Description starts with a crew name (`Diddy: ...`).
 - **A builder's "done" is a claim.** Verify it (`verification.md`) before `[x]` in TASKS.md.
   Builders never edit TASKS.md or STATE.md; they report, the main chat records.
 - **Parallel builders only on different files**, and more than 3 at once only after asking.
-- **Dynamic agents** (`/dynamisch`, off by default): then `builder-medium` (Sonnet) and
-  `builder-light` (Haiku) are listed too. Pick the smallest that fits; hard or unclear = `builder`.
+- **Dynamic agents** (on by default, `/dynamisch` turns them off): `builder` (Opus),
+  `builder-medium` (Sonnet), `builder-light` (Haiku). Pick the smallest that fits; hard or
+  unclear = `builder`. When only `builder` is listed, the mode is off.
+- **More than ~5 tasks of the same kind** (e.g. "check every file for X"): propose a Workflow
+  instead of single builders, with Haiku for the reading stages and Sonnet for the changes.
+  Run it only after the user agrees to the plan and rough cost.
 
 ## Layout
 
@@ -84,44 +87,11 @@ This index is deliberately not auto-loaded. Pull one file, not all of them.
 
 ## Project lifecycle
 
-**Starting a project** — from this root folder:
-```powershell
-.\_instructions\new-project.ps1 -Name <short_name>
-```
-Scaffolds `projects/<name>/`, seeds `notes/STATE.md`, `notes/TASKS.md` and a project `CLAUDE.md`.
-See `_instructions/templates/kickoff.md` for what to supply.
-
-**Continuing a project** — open the session in `projects/<name>/`. Both CLAUDE.md files load;
-read `notes/STATE.md` and `notes/TASKS.md` before doing anything. End a session with `/handoff`.
-
-**Finishing a project or milestone** — the user says *"project complete, update the guides"*
-(or runs `/update-guides`). Only then does knowledge move into `_instructions/`.
-
-## Capture protocol
-
-Knowledge flows **one way**: project → `_instructions/`. Never the reverse, never sideways.
-
-**During a project**, lessons go into that project's `notes/STATE.md` under
-`## Lessons — candidates for _instructions/`, at the moment of discovery. Nothing is written to
-`_instructions/` mid-project.
-
-**On "update the guides"**, each candidate must pass the **admission test** (all three):
-1. It cost real discovery time (not answerable from docs or the code in under a minute)
-2. It is **not** derivable from the files in front of you
-3. It will recur in a *different* project
-
-Then it is written in this format, and nothing longer:
-```markdown
-### <short, symptom-shaped title>
-**Symptom:** what you observe
-**Cause:** the actual mechanism
-**Rule:** what to do instead
-**Verified:** <date> — how it was confirmed   (or: **ASSUMED** — not yet confirmed)
-```
-
-**Accuracy rules on every capture run:**
-- A correction **overwrites** the entry it disproves. Never stack contradicting entries.
-- **One lesson, one home.** Anywhere else gets a one-line pointer, never a copy.
-- Unconfirmed = labelled `ASSUMED`. Proven false = deleted.
-- Prefer putting a lesson **into a script** (a check, a guard, an assert) over prose.
-- `_instructions/` files have no length limit (they load on demand). **This file stays short.**
+- **Start:** from this root, `.\_instructions\new-project.ps1 -Name <short_name>`
+  (what to supply: `_instructions/templates/kickoff.md`).
+- **Continue:** open the session in `projects/<name>/`; read `notes/STATE.md` and
+  `notes/TASKS.md` before doing anything. End every session with `/handoff`.
+- **Lessons:** knowledge flows one way, project → `_instructions/`, never the reverse or sideways.
+  Mid-project, lessons go only into the project's `notes/STATE.md` (*Lessons*), at the moment of
+  discovery. `_instructions/` changes only on *"project complete, update the guides"* or
+  `/update-guides`: then follow `.claude/commands/update-guides.md`. **This file stays short.**

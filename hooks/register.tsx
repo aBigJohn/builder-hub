@@ -26,7 +26,7 @@ const crew = atom({ plugin: 'builder-hud', key: 'crew' } as const, [])
 const crewStats = atom({ plugin: 'builder-hud', key: 'crewStats' } as const, {})
 const isCrewOpen = atom({ plugin: 'builder-hud', key: 'isCrewOpen' } as const, false)
 const isCrewCollapsed = atom({ plugin: 'builder-hud', key: 'isCrewCollapsed' } as const, false)
-const isDynamic = atom({ plugin: 'builder-hud', key: 'isDynamic' } as const, false)
+const isDynamic = atom({ plugin: 'builder-hud', key: 'isDynamic' } as const, true)
 
 const TASKS_PANE = 'tasks'
 const CREW_PANE = 'crew'
@@ -513,8 +513,9 @@ export const register: Register = (on, options) => {
     await $.command.register({ name: 'tasks', description: 'Aufgabenliste (TASKS.md) im Seitenpanel öffnen' }).catch(() => undefined)
     await $.command.register({ name: 'crew', description: 'Agent-Crew im Seitenpanel öffnen' }).catch(() => undefined)
     await $.command.register({ name: 'dynamisch', description: 'Dynamische Agents an/aus (Opus, Sonnet oder Haiku je nach Aufgabe)' }).catch(() => undefined)
+    // On by default; only a stored "off" from an earlier session turns it off.
     const storedDynamic = await $.store.get(DYNAMIC_KEY).catch(() => undefined)
-    await update($, isDynamic, () => storedDynamic === true)
+    await update($, isDynamic, () => storedDynamic !== false)
     await rescanTasks($, true).catch(() => undefined)
     await syncCrew($).catch(() => undefined)
     // A reload keeps the engine's panes open while the module starts over: re-read them.

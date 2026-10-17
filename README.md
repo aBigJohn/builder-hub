@@ -58,13 +58,14 @@ von Hand bearbeiten kannst.
 
 ### Builder: ein frischer Agent pro Aufgabe
 
-Das Plugin bringt den Agent-Typ **`builder`** mit (Opus, Effort High). Er startet mit leerem
-Kontext, bekommt eine in sich geschlossene Aufgabe, ändert nur die erlaubten Dateien, prüft seine
-Arbeit selbst und meldet kurz zurück. Lange Befehle startet er im Hintergrund und wartet, ohne
-Tokens zu verbrauchen.
+Das Plugin bringt den Agent-Typ **`builder`** mit (Opus, Effort High), dazu zwei kleinere (siehe
+unten). Jeder startet mit leerem Kontext, bekommt eine in sich geschlossene Aufgabe, ändert nur die
+erlaubten Dateien, prüft seine Arbeit selbst und meldet kurz zurück. Lange Befehle startet er im
+Hintergrund und wartet, ohne Tokens zu verbrauchen.
 
-**Dynamische Agents** (aus per Standard): Mit `/dynamisch` oder dem Schalter im Crew-Panel kommen
-zwei kleinere Builder dazu. Claude wählt dann je Aufgabe den kleinsten passenden:
+**Dynamische Agents** (an per Standard): Neben dem Opus-Builder stehen zwei kleinere Builder bereit.
+Claude wählt je Aufgabe den kleinsten passenden. Mit `/dynamisch` oder dem Schalter im Crew-Panel
+schaltest du den Modus aus:
 
 | Agent | Modell · Effort | Für |
 |---|---|---|
@@ -72,7 +73,17 @@ zwei kleinere Builder dazu. Claude wählt dann je Aufgabe den kleinsten passende
 | `builder-medium` | Sonnet · medium | normale, klar beschriebene Aufgaben |
 | `builder-light` | Haiku · medium | kleine, mechanische Aufgaben: Umbenennen, Formatieren, Nachschlagen |
 
-Ist der Modus aus, sieht Claude nur den Opus-Builder. Die Wahl bleibt über Sitzungen erhalten.
+Ist der Modus aus, sieht Claude nur den Opus-Builder. Die Wahl bleibt über Sitzungen erhalten; wer
+ihn früher ausgeschaltet hat, behält „aus“.
+
+**Cache für wartende Builder:** `builder` und `builder-medium` halten ihren Prompt-Cache 1 Stunde
+(`experimental: cacheTtl: 1h` in ihrer Agent-Datei). Subagents bekommen sonst nur 5 Minuten, auch
+mit Abo. Ein Builder, der länger auf einen Hintergrund-Build wartet, müsste beim Aufwachen seinen
+ganzen Kontext neu in den Cache schreiben. Der Preis: Cache-Schreibvorgänge dieser Builder kosten
+das 2-fache statt das 1,25-fache normaler Eingabe-Tokens. Darum gilt es nur für sie, nicht für
+`builder-light` und andere Subagents wie Workflow-Agents, die selten lange warten. Braucht Claude
+Code 2.1.248 oder neuer; solange dein Abo Zusatz-Guthaben verbraucht, nimmt Claude Code wieder 5
+Minuten.
 
 ### `/workflow-init`: ein ganzer Arbeitsbereich in einem Schritt
 
