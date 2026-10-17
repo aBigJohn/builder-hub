@@ -174,6 +174,20 @@ Für einen neuen Arbeitsbereich: leeren Ordner anlegen, Claude Code darin öffne
 
 Optionen stellst du im `/config`-Menü (Terminal) oder in `settings.json` unter `pluginConfigs` ein.
 
+### Antwort-Stil `kurz`
+
+Das Plugin bringt den Ausgabe-Stil `builder-hud:kurz` mit. Er ist automatisch an, solange das
+Plugin aktiv ist. Claude antwortet dann kurz und einfach, nach den Regeln von ASD-STE100
+(Simplified Technical English), in deiner Sprache:
+
+- ein Gedanke pro Satz, aktiv, einfache Wörter
+- zuerst das Ergebnis, Ziel höchstens 15 Zeilen
+- Details nur auf Nachfrage oder als Datei
+
+Kurze Antworten sparen Tokens: Du liest sie ganz, statt nachzufragen. Die normalen
+Programmier-Regeln von Claude Code bleiben aktiv. Der Stil steht in `output-styles/kurz.md`.
+Willst du ihn nicht, lösch in dieser Datei die Zeile `force-for-plugin: true`.
+
 ## Was er erwartet
 
 Eine Aufgabenliste in `notes/TASKS.md` im Arbeitsordner oder in `projects/<name>/notes/TASKS.md`:

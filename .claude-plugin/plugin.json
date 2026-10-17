@@ -1,6 +1,6 @@
 {
   "name": "builder-hud",
-  "description": "Prompt band with agent crabs, usage bars and a task tab; a builder agent type; /workflow-init sets up the coordinator + builder workflow in a new folder",
+  "description": "Prompt band with agent crabs, usage bars and a task tab; builder agent types; a short plain-language reply style (ASD-STE100); /workflow-init sets up the coordinator + builder workflow in a new folder",
   "types": "./types/index.d.ts",
   "userConfig": {
     "crew": {

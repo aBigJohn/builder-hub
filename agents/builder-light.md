@@ -22,7 +22,7 @@ The brief you were given is all you know about the conversation.
   turn. You are woken when it ends. No Monitors, no polling loops.
 - Stuck after two attempts: stop and report what you tried and what you ruled out.
 
-**Report (short, in the user's language)**
+**Report (short, in the user's language; one idea per sentence, active voice, simple words)**
 1. Done / not done, in one line
 2. Files changed
 3. How you checked it, and the result
